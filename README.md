@@ -1,12 +1,12 @@
 # Smart Library Borrowing and Management System
 
-A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 5 adds staff-controlled checkout and returns, student loan history, and atomic circulation state changes. Fines, reservation processing, and assessed DSA features remain intentionally out of scope.
+A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 6 adds student reservations, FIFO waitlists, pickup deadlines, and atomic copy assignment. Fines and the assessed DSA features remain intentionally out of scope.
 
 ## Stack
 
 - Client: React, Vite, TypeScript, React Router, Tailwind CSS
 - Server: Node.js, Express, TypeScript
-- Platform: Supabase Auth now; PostgreSQL schema in a later milestone
+- Platform: Supabase Auth and PostgreSQL with Row Level Security
 
 ## Architecture
 
@@ -42,7 +42,7 @@ The server follows a route-to-service boundary. Borrowing rules belong in servic
 
 ## Apply the database migration
 
-The first migration creates profiles, books, physical copies, loans, and reservations with constraints, indexes, triggers, grants, and RLS. The second grants staff-controlled deletion for unreferenced copies while the loan foreign key continues to prevent historical data loss. Apply all pending migrations in timestamp order:
+The migrations create the library foundation, physical-copy protections, atomic circulation, and FIFO reservation workflow. Apply every pending migration in timestamp order. The reservation enum addition is intentionally separate from the migration that uses it because PostgreSQL requires the new value to be committed first.
 
 ```bash
 supabase login
@@ -60,7 +60,7 @@ Vite proxies `/api` requests to port 3000 during development. Express permits th
 
 The browser uses Supabase email/password Auth and listens for session changes. Protected API requests must send `Authorization: Bearer <access-token>`. Express validates that token with Supabase before reading `app_metadata.role`; it never accepts a role from the request body. Supported roles are `admin`, `librarian`, and `student`. A missing or invalid role becomes the least-privileged `student` role.
 
-For this schema-free milestone, create test users through Supabase Authentication and assign server-controlled app metadata such as `{ "role": "librarian" }` using the Supabase dashboard or Admin API. Members and Reports are staff-only. Frontend guards improve navigation, while Express authorization is the security boundary. Row Level Security policies are still required after the database schema is designed.
+Create test users through Supabase Authentication and assign server-controlled app metadata such as `{ "role": "librarian" }` using the Supabase dashboard or Admin API. Members and Reports are staff-only. Frontend guards improve navigation, while Express authorization and database RLS provide the security boundaries.
 
 Useful endpoints:
 
@@ -73,6 +73,8 @@ Useful endpoints:
 - `GET /api/loans/me` returns only the signed-in student's loan history through RLS.
 - `GET /api/loans`, `POST /api/loans`, and `POST /api/loans/:id/return` are staff-only.
 - `GET /api/circulation/members` and `GET /api/circulation/available-copies` support staff checkout selection.
+- `GET /api/reservations/me`, `POST /api/reservations`, and `DELETE /api/reservations/:id` support student waitlists and cancellation.
+- `GET /api/reservations` and `POST /api/reservations/expire` are staff-only reservation operations.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -94,9 +96,15 @@ The book details page is available at `/catalog/:bookId`. Students can view avai
 
 The Borrowing page adapts to the signed-in role. Students see only their own active and returned loans. Staff can search members, select an available barcode, issue a 14-day loan through the existing `StudentBorrowingPolicy`, view all loans, identify overdue items, and process returns.
 
-Checkout and return use PostgreSQL functions from `202611080003_atomic_circulation.sql`. Each function locks the relevant member/copy/loan rows and changes the loan and copy status within one transaction. Checkout repeats availability, suspension, and five-active-loan checks in PostgreSQL after the TypeScript OOP policy runs, protecting against concurrent requests. Return atomically closes the loan and restores the copy to `available`.
+Checkout and return use PostgreSQL functions introduced by `202611080003_atomic_circulation.sql` and extended by the reservation migrations. Each function locks the relevant member, copy, loan, and reservation rows within one transaction. Checkout repeats availability, suspension, and five-active-loan checks after the TypeScript OOP policy runs. Return atomically closes the loan and either restores the copy to `available` or assigns it to the oldest pending reservation.
 
 The migration also adds `profiles.email` and `profiles.status`. Users may update only their display name; they cannot grant themselves an active status. Students retain RLS access to book details referenced by their own history even if the title is later archived.
+
+## Reservation workflow
+
+Students can search unavailable catalog titles, join one waitlist per book, view their FIFO position, and cancel pending or ready reservations. Direct insert, update, and delete grants on reservation rows are revoked; all state changes pass through authenticated PostgreSQL functions that repeat role and ownership checks.
+
+When staff return a copy, the same transaction locks the copy and selects the oldest pending reservation by `created_at` and ID. That reservation becomes `ready`, the copy becomes `reserved`, and a three-day pickup deadline is recorded. Staff can issue the assigned barcode only to that reservation's member. Cancellation or expiry releases the copy and immediately offers it to the next eligible student. The staff Reservations page provides ready-copy checkout and explicit expiry processing.
 
 ## OOP evidence
 
