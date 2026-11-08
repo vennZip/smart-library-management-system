@@ -1,6 +1,6 @@
 # Smart Library Borrowing and Management System
 
-A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 6 adds student reservations, FIFO waitlists, pickup deadlines, and atomic copy assignment. Fines and the assessed DSA features remain intentionally out of scope.
+A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 7 adds OOP-based overdue assessment, persistent fine ledgers, atomic payments and adjustments, and balance-based borrowing restrictions. The assessed DSA features remain intentionally out of scope.
 
 ## Stack
 
@@ -75,6 +75,8 @@ Useful endpoints:
 - `GET /api/circulation/members` and `GET /api/circulation/available-copies` support staff checkout selection.
 - `GET /api/reservations/me`, `POST /api/reservations`, and `DELETE /api/reservations/:id` support student waitlists and cancellation.
 - `GET /api/reservations` and `POST /api/reservations/expire` are staff-only reservation operations.
+- `GET /api/fines/me` returns the signed-in student's fine and transaction history.
+- `GET /api/fines`, `POST /api/fines/:id/payments`, and `POST /api/fines/:id/adjustments` are staff-only.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -106,12 +108,19 @@ Students can search unavailable catalog titles, join one waitlist per book, view
 
 When staff return a copy, the same transaction locks the copy and selects the oldest pending reservation by `created_at` and ID. That reservation becomes `ready`, the copy becomes `reserved`, and a three-day pickup deadline is recorded. Staff can issue the assigned barcode only to that reservation's member. Cancellation or expiry releases the copy and immediately offers it to the next eligible student. The staff Reservations page provides ready-copy checkout and explicit expiry processing.
 
+## Fine and payment workflow
+
+`StandardOverdueFinePolicy` calculates each started overdue day using the active values in `fine_policy_config`. The initial policy charges PHP 10.00 per day, caps a loan's assessment at PHP 500.00, and blocks new borrowing at PHP 500.00 outstanding. These amounts are stored as integer centavos to avoid floating-point currency errors.
+
+On return, the service calculates the assessment through the OOP policy and passes the result and return timestamp to one atomic PostgreSQL operation. The database independently recalculates the expected amount, closes the loan, creates at most one fine, and preserves reservation copy assignment. Payments and signed adjustments lock the fine, append an audit transaction, and update its balance in the same transaction. Students have read-only RLS access to their own ledger; only staff functions can mutate financial records.
+
 ## OOP evidence
 
 - **Encapsulation:** private copy counts, member state, and loan state change only through validated methods.
 - **Abstraction:** `LibraryItem` defines item behavior and `BorrowingPolicy` defines borrowing rules.
 - **Inheritance:** `Book` and `ReferenceBook` specialize `LibraryItem` based on genuine item relationships.
 - **Polymorphism:** `BorrowingService` operates through the policy contract, producing different student and staff loan periods without role conditionals.
+- **Fine policy abstraction:** `FinePolicy` separates assessment rules from return orchestration, while `StandardOverdueFinePolicy` encapsulates daily rates and maximum charges.
 
 The tests demonstrate these behaviors through public APIs rather than inspecting internal fields.
 
