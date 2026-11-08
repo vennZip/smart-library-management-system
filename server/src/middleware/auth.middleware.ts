@@ -4,6 +4,7 @@ import type { UserRole } from '../auth/auth.types.js'
 
 export interface AuthenticatedRequest extends Request {
   authUser?: Awaited<ReturnType<AuthVerifier['verifyAccessToken']>>
+  authToken?: string
 }
 
 export function authenticate(verifier: AuthVerifier) {
@@ -20,6 +21,7 @@ export function authenticate(verifier: AuthVerifier) {
         return
       }
       request.authUser = user
+      request.authToken = token
       next()
     } catch {
       response.status(503).json({ message: 'Authentication service unavailable' })

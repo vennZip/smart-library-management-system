@@ -1,6 +1,6 @@
 # Smart Library Borrowing and Management System
 
-A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 2 adds Supabase authentication, role authorization, and an initial OOP borrowing domain; it does **not** define the production database schema or DSA features.
+A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 3 adds the PostgreSQL foundation, row-level security, and the first database-backed catalog workflow. DSA features and complete circulation workflows remain intentionally out of scope.
 
 ## Stack
 
@@ -17,10 +17,12 @@ client/src/
   data/             temporary UI-only placeholder data
   lib/              external clients such as Supabase
   pages/            route-level screens
+supabase/migrations/ versioned PostgreSQL schema and RLS policies
 server/src/
   auth/             verified Supabase identity and shared role types
   domain/           encapsulated library entities and policy abstractions
   middleware/       authentication and role authorization
+  repositories/     Supabase persistence behind interfaces
   routes/           HTTP paths, status codes, and responses
   services/         business logic and domain orchestration
   app.ts            middleware and route composition
@@ -32,11 +34,25 @@ The server follows a route-to-service boundary. Borrowing rules belong in servic
 ## Setup and test
 
 1. Run `npm install` inside both `client` and `server`.
-2. Copy `client/.env.example` to `client/.env.local` and add Supabase browser credentials.
+2. Copy `client/.env.example` to `client/.env.local`; add Supabase browser credentials and `VITE_API_URL`.
 3. Copy `server/.env.example` to `server/.env`. Use the same Supabase URL and publishable key.
 4. In separate terminals run `npm run dev:server` and `npm run dev:client` from the repository root.
 5. Open `http://localhost:5173`. Check `http://localhost:3000/api/health` for JSON status.
 6. Run `npm run check` for lint, builds, type checking, API authorization tests, and OOP tests.
+
+## Apply the database migration
+
+The migration at `supabase/migrations/202611080001_library_foundation.sql` creates profiles, books, physical copies, loans, and reservations with constraints, indexes, triggers, grants, and RLS. Apply it once to the intended Supabase project before using the catalog:
+
+```bash
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+```
+
+Alternatively, paste the complete migration into the Supabase SQL Editor and run it once. Do not rerun it after it succeeds because the enum and table creation statements are intentionally versioned, not idempotent.
+
+For Vercel, set `VITE_API_URL` to the Render service origin, such as `https://your-api.onrender.com`, and redeploy. Keep the local value as `http://localhost:3000`. Render's `CLIENT_ORIGIN` must exactly match the Vercel production origin.
 
 Vite proxies `/api` requests to port 3000 during development. Express permits the configured `CLIENT_ORIGIN` (default `http://localhost:5173`) through CORS.
 
@@ -50,6 +66,17 @@ Useful endpoints:
 
 - `GET /api/auth/me` requires any valid user token.
 - `GET /api/auth/staff-check` requires an `admin` or `librarian` token.
+- `GET /api/catalog` lets authenticated users search and paginate active books.
+- `POST /api/catalog`, `PATCH /api/catalog/:id`, and `DELETE /api/catalog/:id` are staff-only. Delete performs a soft archive.
+
+The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
+
+## Database authorization
+
+- Students can read active catalog records, see their own loans/reservations, create their own reservations, and maintain their own profile display data.
+- Librarians and admins can manage catalog records and physical copies, manage loans, view profiles, and manage reservations.
+- Roles come from server-controlled `app_metadata.role`. RLS does not use editable `user_metadata`.
+- Books are archived rather than deleted so future loan history can retain valid references.
 
 ## OOP evidence
 
