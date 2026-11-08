@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import type { AvailableCopy,CheckoutContext,LoanRecord,MemberSummary } from '../circulation/circulation.types.js'
+import type { CirculationRepository } from '../repositories/circulation.repository.js'
+import { CirculationConflictError,CirculationService } from './circulation.service.js'
+
+const member:MemberSummary={id:'member-1',displayName:'Alex Student',email:'alex@example.edu',status:'active',activeLoanCount:0}
+const copy:AvailableCopy={id:'copy-1',barcode:'NB-001',shelfLocation:'A-1',bookId:'book-1',bookTitle:'Clean Code',bookAuthor:'Robert Martin',isbn:'978-0132350884'}
+function loan(dueAt='2026-11-22T00:00:00.000Z'):LoanRecord{return{id:'loan-1',copyId:copy.id,memberId:member.id,memberName:member.displayName,memberEmail:member.email,barcode:copy.barcode,bookId:copy.bookId,bookTitle:copy.bookTitle,bookAuthor:copy.bookAuthor,borrowedAt:'2026-11-08T00:00:00.000Z',dueAt,returnedAt:null,status:'active',overdue:false}}
+class MemoryCirculationRepository implements CirculationRepository{context:CheckoutContext|null={member:{...member},copy:{...copy}};issuedDueAt='';returned=false;async listLoans(){return[loan()]}async searchMembers(){return[member]}async searchAvailableCopies(){return[copy]}async getCheckoutContext(){return this.context}async issueLoan(_copyId:string,_memberId:string,dueAt:string){this.issuedDueAt=dueAt;return loan(dueAt)}async returnLoan():Promise<LoanRecord>{this.returned=true;return{...loan(),status:'returned',returnedAt:new Date().toISOString(),overdue:false}}}
+test('checkout applies the student OOP policy and produces a fourteen-day due date',async()=>{const repository=new MemoryCirculationRepository();const before=Date.now();await new CirculationService(repository).checkout({memberId:member.id,copyId:copy.id});const due=new Date(repository.issuedDueAt).getTime();assert.ok(due-before>=13*86_400_000);assert.ok(due-before<=15*86_400_000)})
+test('checkout rejects suspended members through the OOP policy',async()=>{const repository=new MemoryCirculationRepository();repository.context={member:{...member,status:'suspended'},copy};await assert.rejects(()=>new CirculationService(repository).checkout({memberId:member.id,copyId:copy.id}),CirculationConflictError)})
+test('checkout rejects members at the five-loan limit',async()=>{const repository=new MemoryCirculationRepository();repository.context={member:{...member,activeLoanCount:5},copy};await assert.rejects(()=>new CirculationService(repository).checkout({memberId:member.id,copyId:copy.id}),/Student loan limit reached/)})
+test('checkout rejects a copy lost to a concurrent request',async()=>{const repository=new MemoryCirculationRepository();repository.context=null;await assert.rejects(()=>new CirculationService(repository).checkout({memberId:member.id,copyId:copy.id}),CirculationConflictError)})
+test('return delegates to the atomic repository operation',async()=>{const repository=new MemoryCirculationRepository();const returned=await new CirculationService(repository).returnLoan('loan-1');assert.equal(repository.returned,true);assert.equal(returned?.status,'returned')})

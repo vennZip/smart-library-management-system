@@ -1,6 +1,6 @@
 # Smart Library Borrowing and Management System
 
-A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 4 adds staff-managed physical copy inventory and accurate availability counts. DSA features and complete circulation workflows remain intentionally out of scope.
+A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 5 adds staff-controlled checkout and returns, student loan history, and atomic circulation state changes. Fines, reservation processing, and assessed DSA features remain intentionally out of scope.
 
 ## Stack
 
@@ -70,6 +70,9 @@ Useful endpoints:
 - `POST /api/catalog`, `PATCH /api/catalog/:id`, and `DELETE /api/catalog/:id` are staff-only. Delete performs a soft archive.
 - `GET /api/catalog/:bookId/copies` returns physical inventory for authenticated users.
 - `POST /api/catalog/:bookId/copies`, `PATCH /api/copies/:id`, and `DELETE /api/copies/:id` are staff-only.
+- `GET /api/loans/me` returns only the signed-in student's loan history through RLS.
+- `GET /api/loans`, `POST /api/loans`, and `POST /api/loans/:id/return` are staff-only.
+- `GET /api/circulation/members` and `GET /api/circulation/available-copies` support staff checkout selection.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -85,7 +88,15 @@ The backend creates a Supabase client per request with the user's access token. 
 
 Each bibliographic book can have multiple physical copies. Every copy has a unique barcode, shelf location, acquisition date, and one of five statuses: `available`, `on_loan`, `reserved`, `lost`, or `maintenance`. Catalog availability is calculated from these records rather than stored as a duplicated counter.
 
-The book details page is available at `/catalog/:bookId`. Students can view availability and locations; librarians and admins can add, edit, search, and conditionally remove copy records. This milestone does not issue loans, place reservations, calculate fines, or implement an assessed DSA structure.
+The book details page is available at `/catalog/:bookId`. Students can view availability and locations; librarians and admins can add, edit, search, and conditionally remove copy records. Copy management remains separate from the circulation service.
+
+## Circulation workflow
+
+The Borrowing page adapts to the signed-in role. Students see only their own active and returned loans. Staff can search members, select an available barcode, issue a 14-day loan through the existing `StudentBorrowingPolicy`, view all loans, identify overdue items, and process returns.
+
+Checkout and return use PostgreSQL functions from `202611080003_atomic_circulation.sql`. Each function locks the relevant member/copy/loan rows and changes the loan and copy status within one transaction. Checkout repeats availability, suspension, and five-active-loan checks in PostgreSQL after the TypeScript OOP policy runs, protecting against concurrent requests. Return atomically closes the loan and restores the copy to `available`.
+
+The migration also adds `profiles.email` and `profiles.status`. Users may update only their display name; they cannot grant themselves an active status. Students retain RLS access to book details referenced by their own history even if the title is later archived.
 
 ## OOP evidence
 
