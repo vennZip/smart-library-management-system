@@ -6,17 +6,22 @@ import { createSupabaseAuthService, type AuthVerifier } from './auth/supabase-au
 import { createCatalogRouter, type CatalogServiceFactory } from './routes/catalog.routes.js'
 import { createCatalogRepository } from './repositories/catalog.repository.js'
 import { CatalogService } from './services/catalog.service.js'
+import { createCopyRouter,type CopyServiceFactory } from './routes/copy.routes.js'
+import { createCopyRepository } from './repositories/copy.repository.js'
+import { CopyService } from './services/copy.service.js'
 
-export function createApp(authVerifier?: AuthVerifier,catalogFactory?:CatalogServiceFactory) {
+export function createApp(authVerifier?:AuthVerifier,catalogFactory?:CatalogServiceFactory,copyFactory?:CopyServiceFactory) {
 const app=express()
 const verifier=authVerifier??createSupabaseAuthService()
 const serviceFactory=catalogFactory??((token:string)=>new CatalogService(createCatalogRepository(token)))
+const copyServiceFactory=copyFactory??((token:string)=>new CopyService(createCopyRepository(token)))
 const clientOrigin=process.env.CLIENT_ORIGIN??'http://localhost:5173'
 app.use(cors({origin:clientOrigin,credentials:true}))
 app.use(express.json())
 app.use('/api/health',healthRouter)
 app.use('/api/auth', createAuthRouter(verifier))
 app.use('/api/catalog',createCatalogRouter(verifier,serviceFactory))
+app.use('/api',createCopyRouter(verifier,copyServiceFactory))
 app.use((_request,response)=>{response.status(404).json({message:'Route not found'})})
 return app
 }

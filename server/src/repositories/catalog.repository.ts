@@ -1,5 +1,6 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { BookInput, BookRecord, CatalogPage, CatalogQuery } from '../catalog/catalog.types.js'
+import { createSupabaseUserClient } from '../infrastructure/supabase-user-client.js'
 
 export interface CatalogRepository {
   list(query: CatalogQuery): Promise<CatalogPage>
@@ -47,8 +48,5 @@ export class SupabaseCatalogRepository implements CatalogRepository {
 }
 
 export function createCatalogRepository(accessToken:string):SupabaseCatalogRepository{
-  const url=process.env.SUPABASE_URL;const key=process.env.SUPABASE_PUBLISHABLE_KEY
-  if(!url||!key)throw new Error('Supabase database configuration is missing')
-  const client=createClient(url,key,{global:{headers:{Authorization:`Bearer ${accessToken}`}},auth:{autoRefreshToken:false,persistSession:false,detectSessionInUrl:false}})
-  return new SupabaseCatalogRepository(client)
+  return new SupabaseCatalogRepository(createSupabaseUserClient(accessToken))
 }

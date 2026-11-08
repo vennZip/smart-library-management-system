@@ -1,6 +1,6 @@
 # Smart Library Borrowing and Management System
 
-A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 3 adds the PostgreSQL foundation, row-level security, and the first database-backed catalog workflow. DSA features and complete circulation workflows remain intentionally out of scope.
+A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 4 adds staff-managed physical copy inventory and accurate availability counts. DSA features and complete circulation workflows remain intentionally out of scope.
 
 ## Stack
 
@@ -42,7 +42,7 @@ The server follows a route-to-service boundary. Borrowing rules belong in servic
 
 ## Apply the database migration
 
-The migration at `supabase/migrations/202611080001_library_foundation.sql` creates profiles, books, physical copies, loans, and reservations with constraints, indexes, triggers, grants, and RLS. Apply it once to the intended Supabase project before using the catalog:
+The first migration creates profiles, books, physical copies, loans, and reservations with constraints, indexes, triggers, grants, and RLS. The second grants staff-controlled deletion for unreferenced copies while the loan foreign key continues to prevent historical data loss. Apply all pending migrations in timestamp order:
 
 ```bash
 supabase login
@@ -68,6 +68,8 @@ Useful endpoints:
 - `GET /api/auth/staff-check` requires an `admin` or `librarian` token.
 - `GET /api/catalog` lets authenticated users search and paginate active books.
 - `POST /api/catalog`, `PATCH /api/catalog/:id`, and `DELETE /api/catalog/:id` are staff-only. Delete performs a soft archive.
+- `GET /api/catalog/:bookId/copies` returns physical inventory for authenticated users.
+- `POST /api/catalog/:bookId/copies`, `PATCH /api/copies/:id`, and `DELETE /api/copies/:id` are staff-only.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -77,6 +79,13 @@ The backend creates a Supabase client per request with the user's access token. 
 - Librarians and admins can manage catalog records and physical copies, manage loans, view profiles, and manage reservations.
 - Roles come from server-controlled `app_metadata.role`. RLS does not use editable `user_metadata`.
 - Books are archived rather than deleted so future loan history can retain valid references.
+- Physical copies with loan history, an active loan, or a reservation cannot be deleted. Staff should mark retained records as `lost` or `maintenance` instead.
+
+## Physical copy inventory
+
+Each bibliographic book can have multiple physical copies. Every copy has a unique barcode, shelf location, acquisition date, and one of five statuses: `available`, `on_loan`, `reserved`, `lost`, or `maintenance`. Catalog availability is calculated from these records rather than stored as a duplicated counter.
+
+The book details page is available at `/catalog/:bookId`. Students can view availability and locations; librarians and admins can add, edit, search, and conditionally remove copy records. This milestone does not issue loans, place reservations, calculate fines, or implement an assessed DSA structure.
 
 ## OOP evidence
 
