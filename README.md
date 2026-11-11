@@ -79,6 +79,9 @@ Useful endpoints:
 - `GET /api/fines`, `POST /api/fines/:id/payments`, and `POST /api/fines/:id/adjustments` are staff-only.
 - `GET /api/dsa/overview` rebuilds the staff-only read-only DSA snapshot.
 - `POST /api/dsa/validate-identifiers` demonstrates custom HashSet import validation without database writes.
+- `POST /api/dsa/tree-search` demonstrates normalized-title BST lookup.
+- `POST /api/dsa/graph-traverse` runs recommendation-graph BFS or DFS.
+- `POST /api/dsa/catalog-algorithms` runs manual filtering, stable merge sort, and ranking.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -128,6 +131,6 @@ The tests demonstrate these behaviors through public APIs rather than inspecting
 
 ## DSA evidence
 
-Milestone 8A implements a custom generic singly linked list for borrowing-history traversal, FIFO queues for per-title reservation ordering, a LIFO stack for newest-first catalog review, and a separate-chaining string HashSet for ISBN and barcode validation. The staff-only `/dsa-lab` page visualizes live read-only snapshots and displays the time and space complexity of each operation.
+Milestone 8A implements a custom generic singly linked list for borrowing-history traversal, FIFO queues for per-title reservation ordering, a LIFO stack for newest-first catalog review, and a separate-chaining string HashSet for ISBN and barcode validation. Milestone 8B adds a title-indexing binary search tree, an adjacency-list recommendation graph with BFS and DFS, and explicit array filtering, stable merge sort, and ranking algorithms. The staff-only `/dsa-lab` page visualizes live read-only snapshots and displays complexity and performance measurements.
 
-PostgreSQL remains authoritative; the structures are rebuilt in memory and do not pretend to replace durable storage. Full design rationale, complexity tables, safety boundaries, and test evidence are documented in [`docs/dsa-milestone-8a.md`](docs/dsa-milestone-8a.md). Trees and graphs remain intentionally deferred to Milestone 8B.
+PostgreSQL remains authoritative; the structures are rebuilt in memory and do not pretend to replace durable storage or production catalog queries. Full design rationale, complexity tables, safety boundaries, and test evidence are documented in [`docs/dsa-milestone-8a.md`](docs/dsa-milestone-8a.md) and [`docs/dsa-milestone-8b.md`](docs/dsa-milestone-8b.md).

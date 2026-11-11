@@ -30,7 +30,7 @@ The HashSet uses FNV-1a-style string hashing and separate chaining. It reports b
 - `POST /api/dsa/validate-identifiers` is staff-only and accepts at most 500 ISBNs and 500 barcodes.
 - Demonstration endpoints perform no inserts, updates, or deletes.
 - The visualization clearly labels the snapshot as read-only.
-- Trees and graphs are intentionally deferred to Milestone 8B.
+- Trees and graphs are implemented separately in Milestone 8B so this document remains focused on the core structures.
 
 ## Tests
 
