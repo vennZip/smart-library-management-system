@@ -77,6 +77,8 @@ Useful endpoints:
 - `GET /api/reservations` and `POST /api/reservations/expire` are staff-only reservation operations.
 - `GET /api/fines/me` returns the signed-in student's fine and transaction history.
 - `GET /api/fines`, `POST /api/fines/:id/payments`, and `POST /api/fines/:id/adjustments` are staff-only.
+- `GET /api/dsa/overview` rebuilds the staff-only read-only DSA snapshot.
+- `POST /api/dsa/validate-identifiers` demonstrates custom HashSet import validation without database writes.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -124,8 +126,8 @@ On return, the service calculates the assessment through the OOP policy and pass
 
 The tests demonstrate these behaviors through public APIs rather than inspecting internal fields.
 
-## Academic implementation roadmap
+## DSA evidence
 
-The OOP foundation is implemented. DSA requirements will each support a named feature and receive algorithm-focused tests: arrays for result sets, linked lists for borrowing history, HashSets for unique reservations/tags, stacks for undo, queues for waitlists, trees for catalog indexing, and graphs for recommendations or location navigation.
+Milestone 8A implements a custom generic singly linked list for borrowing-history traversal, FIFO queues for per-title reservation ordering, a LIFO stack for newest-first catalog review, and a separate-chaining string HashSet for ISBN and barcode validation. The staff-only `/dsa-lab` page visualizes live read-only snapshots and displays the time and space complexity of each operation.
 
-These structures must be implemented and justified rather than merely relying on database tables or JavaScript built-ins. Complexity notes and unit tests will accompany each later feature. They remain intentionally unimplemented.
+PostgreSQL remains authoritative; the structures are rebuilt in memory and do not pretend to replace durable storage. Full design rationale, complexity tables, safety boundaries, and test evidence are documented in [`docs/dsa-milestone-8a.md`](docs/dsa-milestone-8a.md). Trees and graphs remain intentionally deferred to Milestone 8B.

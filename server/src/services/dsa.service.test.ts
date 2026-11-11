@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import type { DsaSnapshot } from '../dsa/dsa.types.js'
+import type { DsaRepository } from '../repositories/dsa.repository.js'
+import { DsaService,DsaValidationError } from './dsa.service.js'
+
+const snapshot:DsaSnapshot={loans:[{id:'loan-1',memberName:'Ana',bookTitle:'First',barcode:'C-1',borrowedAt:'2026-11-01T00:00:00Z',returnedAt:'2026-11-02T00:00:00Z',status:'returned'},{id:'loan-2',memberName:'Ben',bookTitle:'Second',barcode:'C-2',borrowedAt:'2026-11-03T00:00:00Z',returnedAt:null,status:'active'}],reservations:[{id:'r-1',bookId:'b-1',bookTitle:'First',memberName:'Ana',createdAt:'2026-11-01T00:00:00Z'},{id:'r-2',bookId:'b-1',bookTitle:'First',memberName:'Ben',createdAt:'2026-11-02T00:00:00Z'},{id:'r-3',bookId:'b-2',bookTitle:'Second',memberName:'Cara',createdAt:'2026-11-03T00:00:00Z'}],catalog:[{id:'b-1',title:'First',isbn:'ISBN-1',updatedAt:'2026-11-01T00:00:00Z'},{id:'b-2',title:'Second',isbn:'ISBN-2',updatedAt:'2026-11-02T00:00:00Z'}],barcodes:['C-1','C-2']}
+const repository:DsaRepository={loadSnapshot:async()=>snapshot}
+test('DSA overview builds linked traversal and catalog stack from persistent data',async()=>{const report=await new DsaService(repository).overview();assert.equal(report.linkedList.headId,'loan-1');assert.equal(report.linkedList.tailId,'loan-2');assert.equal(report.linkedList.nodes[0]?.nextId,'loan-2');assert.deepEqual(report.stack.items.map(item=>item.id),['b-2','b-1']);assert.equal(report.stack.topId,'b-2')})
+test('DSA overview preserves FIFO order independently for each book',async()=>{const report=await new DsaService(repository).overview();const first=report.queue.groups.find(group=>group.bookId==='b-1');assert.equal(first?.nextMember,'Ana');assert.deepEqual(first?.members.map(member=>member.position),[1,2]);assert.equal(report.queue.totalWaiting,3)})
+test('identifier validation detects normalized duplicates through custom hash buckets',()=>{const result=new DsaService(repository).validate({isbns:['978-A',' 978-a '],barcodes:['LIB-1','LIB-2']});assert.equal(result.valid,false);assert.deepEqual(result.isbn.duplicates,['978-a']);assert.equal(result.barcodes.accepted,2)})
+test('identifier validation rejects malformed and oversized inputs',()=>{const service=new DsaService(repository);assert.throws(()=>service.validate({isbns:'bad',barcodes:[]}),DsaValidationError);assert.throws(()=>service.validate({isbns:Array.from({length:501},()=> 'x'),barcodes:[]}),DsaValidationError)})

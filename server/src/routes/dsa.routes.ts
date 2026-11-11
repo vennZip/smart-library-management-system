@@ -1,0 +1,8 @@
+import { Router,type Response } from 'express'
+import type { AuthVerifier } from '../auth/supabase-auth.service.js'
+import { authenticate,authorize,type AuthenticatedRequest } from '../middleware/auth.middleware.js'
+import { DsaValidationError,type DsaService } from '../services/dsa.service.js'
+export type DsaServiceFactory=(token:string)=>DsaService
+function service(request:AuthenticatedRequest,factory:DsaServiceFactory){if(!request.authToken)throw new Error('Authenticated request is missing its token');return factory(request.authToken)}
+function handle(error:unknown,response:Response){if(error instanceof DsaValidationError){response.status(400).json({message:error.message});return}console.error(error);response.status(500).json({message:'DSA demonstration could not be generated'})}
+export function createDsaRouter(verifier:AuthVerifier,factory:DsaServiceFactory){const router=Router();router.use(authenticate(verifier),authorize('admin','librarian'));router.get('/dsa/overview',async(request:AuthenticatedRequest,response)=>{try{response.json(await service(request,factory).overview())}catch(error){handle(error,response)}});router.post('/dsa/validate-identifiers',(request:AuthenticatedRequest,response)=>{try{response.json(service(request,factory).validate(request.body as Record<string,unknown>))}catch(error){handle(error,response)}});return router}
