@@ -1,6 +1,6 @@
 # Smart Library Borrowing and Management System
 
-A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 7 adds OOP-based overdue assessment, persistent fine ledgers, atomic payments and adjustments, and balance-based borrowing restrictions. The assessed DSA features remain intentionally out of scope.
+A university final project combining an accessible library operations interface with deliberate OOP and DSA implementations. Milestone 9 adds read-only admin analytics, append-only staff audit evidence, API hardening, structured observability, deployment checks, and final academic traceability.
 
 ## Stack
 
@@ -82,6 +82,7 @@ Useful endpoints:
 - `POST /api/dsa/tree-search` demonstrates normalized-title BST lookup.
 - `POST /api/dsa/graph-traverse` runs recommendation-graph BFS or DFS.
 - `POST /api/dsa/catalog-algorithms` runs manual filtering, stable merge sort, and ranking.
+- `GET /api/admin/analytics` returns a read-only operational snapshot for administrators.
 
 The backend creates a Supabase client per request with the user's access token. This means database RLS remains active behind Express. No secret/service-role key is used by the catalog repository.
 
@@ -134,3 +135,9 @@ The tests demonstrate these behaviors through public APIs rather than inspecting
 Milestone 8A implements a custom generic singly linked list for borrowing-history traversal, FIFO queues for per-title reservation ordering, a LIFO stack for newest-first catalog review, and a separate-chaining string HashSet for ISBN and barcode validation. Milestone 8B adds a title-indexing binary search tree, an adjacency-list recommendation graph with BFS and DFS, and explicit array filtering, stable merge sort, and ranking algorithms. The staff-only `/dsa-lab` page visualizes live read-only snapshots and displays complexity and performance measurements.
 
 PostgreSQL remains authoritative; the structures are rebuilt in memory and do not pretend to replace durable storage or production catalog queries. Full design rationale, complexity tables, safety boundaries, and test evidence are documented in [`docs/dsa-milestone-8a.md`](docs/dsa-milestone-8a.md) and [`docs/dsa-milestone-8b.md`](docs/dsa-milestone-8b.md).
+
+## Production hardening and final evidence
+
+Every response receives a correlation ID and defensive API headers. Requests are rate-limited per API instance, malformed JSON receives a stable error envelope, and completed requests emit structured JSON logs without credentials. Successful catalog, inventory, circulation, reservation-expiry, and fine mutations by staff create append-only audit records protected by RLS. The admin-only `/analytics` page calculates current counts through a read-only repository and displays recent audit activity.
+
+Use [`docs/academic-evidence.md`](docs/academic-evidence.md) for OOP/DSA diagrams, complexity and source/test traceability. Use [`docs/deployment-verification.md`](docs/deployment-verification.md) for the Render, Vercel, Supabase, security, accessibility, and production smoke checklist. Optional repeatable catalog-only demonstration data is in [`supabase/seed.sql`](supabase/seed.sql); never run demo seeds against an unapproved production project.

@@ -8,6 +8,6 @@ export async function apiRequest<T>(path:string,options:RequestInit={}):Promise<
   const response=await fetch(`${apiUrl}${path}`,{...options,headers:{Authorization:`Bearer ${session.access_token}`,...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}})
   if(response.status===204)return undefined as T
   const body=await response.json() as unknown
-  if(!response.ok){const message=typeof body==='object'&&body!==null&&'message'in body&&typeof body.message==='string'?body.message:'The request could not be completed';throw new Error(message)}
+  if(!response.ok){const nested=typeof body==='object'&&body!==null&&'error'in body&&typeof body.error==='object'&&body.error!==null&&'message'in body.error&&typeof body.error.message==='string'?body.error.message:null;const message=nested??(typeof body==='object'&&body!==null&&'message'in body&&typeof body.message==='string'?body.message:'The request could not be completed');throw new Error(message)}
   return body as T
 }

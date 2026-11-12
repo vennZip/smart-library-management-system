@@ -1,0 +1,2 @@
+export interface AnalyticsActivity {id:string;action:string;entityType:string;actorName:string;createdAt:string}
+export interface AnalyticsSummary {generatedAt:string;collection:{titles:number;copies:number;available:number;onLoan:number;reserved:number;availabilityPercent:number};circulation:{activeLoans:number;overdueLoans:number;returnedLoans:number;pendingReservations:number;readyReservations:number};accounts:{members:number;openFines:number;outstandingCents:number};recentActivity:AnalyticsActivity[]}
