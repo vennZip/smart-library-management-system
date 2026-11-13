@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import type { UserRole } from '../../auth/auth.types'
 import { Icon } from '../icons/Icon'
+import { ChangePasswordDialog } from './ChangePasswordDialog'
 
 type NavigationItem = { to: string; label: string; icon: 'home' | 'book' | 'swap' | 'bookmark' | 'wallet' | 'nodes' | 'chart'; end?: boolean; roles?: UserRole[] }
 const navigation: NavigationItem[] = [
@@ -18,6 +19,7 @@ const navigation: NavigationItem[] = [
 export function AppLayout() {
   const [open, setOpen] = useState(false)
   const [signOutError, setSignOutError] = useState('')
+  const [passwordDialog, setPasswordDialog] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const { user, role, signOut } = useAuth()
@@ -91,9 +93,11 @@ export function AppLayout() {
       </nav>
       <div className="mt-auto border-t border-white/20 pt-5">
         <div className="flex items-center gap-3 px-2"><div className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-forest" aria-hidden="true">{initials}</div><div className="min-w-0"><p className="truncate text-sm font-medium capitalize">{displayName}</p><p className="text-xs capitalize text-white/60">{role}</p></div></div>
-        <button className="mt-4 w-full border border-white/25 px-3 py-2 text-left text-xs font-semibold text-white/80 hover:bg-white/10 hover:text-white" type="button" onClick={() => void handleSignOut()}>Sign out</button>
+        <button className="mt-4 w-full border border-white/25 px-3 py-2 text-left text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white" type="button" onClick={() => setPasswordDialog(true)}>Change password</button>
+        <button className="mt-2 w-full border border-white/25 px-3 py-2 text-left text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white" type="button" onClick={() => void handleSignOut()}>Sign out</button>
         {signOutError && <p className="mt-2 text-xs text-red-200" role="alert">{signOutError}</p>}
       </div>
     </aside>
+    {passwordDialog && <ChangePasswordDialog onClose={() => setPasswordDialog(false)} />}
   </div>
 }
