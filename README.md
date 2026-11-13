@@ -14,7 +14,6 @@ A university final project combining an accessible library operations interface 
 client/src/
   auth/             session context, role parsing, and route guards
   components/       reusable presentation and layout components
-  data/             temporary UI-only placeholder data
   lib/              external clients such as Supabase
   pages/            route-level screens
 supabase/migrations/ versioned PostgreSQL schema and RLS policies
@@ -141,3 +140,12 @@ PostgreSQL remains authoritative; the structures are rebuilt in memory and do no
 Every response receives a correlation ID and defensive API headers. Requests are rate-limited per API instance, malformed JSON receives a stable error envelope, and completed requests emit structured JSON logs without credentials. Successful catalog, inventory, circulation, reservation-expiry, and fine mutations by staff create append-only audit records protected by RLS. The admin-only `/analytics` page calculates current counts through a read-only repository and displays recent audit activity.
 
 Use [`docs/academic-evidence.md`](docs/academic-evidence.md) for OOP/DSA diagrams, complexity and source/test traceability. Use [`docs/deployment-verification.md`](docs/deployment-verification.md) for the Render, Vercel, Supabase, security, accessibility, and production smoke checklist. Optional repeatable catalog-only demonstration data is in [`supabase/seed.sql`](supabase/seed.sql); never run demo seeds against an unapproved production project.
+
+## Final submission resources
+
+- [`docs/final-system-design.md`](docs/final-system-design.md): deployed architecture, request sequence, ERD, OOP, and DSA diagrams.
+- [`docs/demo-scenarios.md`](docs/demo-scenarios.md): safe student, librarian, and admin presentation flows.
+- [`docs/project-defense-guide.md`](docs/project-defense-guide.md): likely technical questions with concise defensible answers.
+- [`docs/final-release.md`](docs/final-release.md): release gate, deployed smoke test, tagging, and rollback process.
+
+Run the read-only deployed verification with `CLIENT_URL` and `API_URL` set, then execute `npm run smoke:production`.
