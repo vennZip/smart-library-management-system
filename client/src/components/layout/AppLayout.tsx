@@ -5,7 +5,7 @@ import type { UserRole } from '../../auth/auth.types'
 import { Icon } from '../icons/Icon'
 import { ChangePasswordDialog } from './ChangePasswordDialog'
 
-type NavigationItem = { to: string; label: string; icon: 'home' | 'book' | 'swap' | 'bookmark' | 'wallet' | 'nodes' | 'chart'; end?: boolean; roles?: UserRole[] }
+type NavigationItem = { to: string; label: string; icon: 'home' | 'book' | 'swap' | 'bookmark' | 'wallet' | 'nodes' | 'chart' | 'users'; end?: boolean; roles?: UserRole[] }
 const navigation: NavigationItem[] = [
   { to: '/', label: 'Overview', icon: 'home', end: true },
   { to: '/catalog', label: 'Book catalog', icon: 'book' },
@@ -13,6 +13,7 @@ const navigation: NavigationItem[] = [
   { to: '/reservations', label: 'Reservations', icon: 'bookmark' },
   { to: '/fines', label: 'Fines & payments', icon: 'wallet' },
   { to: '/analytics', label: 'Admin analytics', icon: 'chart', roles: ['admin'] },
+  { to: '/accounts', label: 'Account management', icon: 'users', roles: ['admin'] },
   { to: '/dsa-lab', label: 'DSA evidence lab', icon: 'nodes', roles: ['admin', 'librarian'] },
 ]
 

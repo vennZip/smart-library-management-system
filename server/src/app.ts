@@ -27,8 +27,11 @@ import { AnalyticsService } from './services/analytics.service.js'
 import { createAuditMiddleware,rateLimit,requestContext,securityHeaders,structuredLogger,type AuditRepositoryFactory } from './middleware/production.middleware.js'
 import { sendApiError } from './http/api-error.js'
 import type { NextFunction,Request,Response } from 'express'
+import { createAccountsRouter,type AccountsServiceFactory } from './routes/accounts.routes.js'
+import { createAccountsRepository } from './repositories/accounts.repository.js'
+import { AccountsService } from './services/accounts.service.js'
 
-export function createApp(authVerifier?:AuthVerifier,catalogFactory?:CatalogServiceFactory,copyFactory?:CopyServiceFactory,circulationFactory?:CirculationServiceFactory,reservationFactory?:ReservationServiceFactory,fineFactory?:FineServiceFactory,dsaFactory?:DsaServiceFactory,analyticsFactory?:AnalyticsServiceFactory,auditFactory?:AuditRepositoryFactory) {
+export function createApp(authVerifier?:AuthVerifier,catalogFactory?:CatalogServiceFactory,copyFactory?:CopyServiceFactory,circulationFactory?:CirculationServiceFactory,reservationFactory?:ReservationServiceFactory,fineFactory?:FineServiceFactory,dsaFactory?:DsaServiceFactory,analyticsFactory?:AnalyticsServiceFactory,auditFactory?:AuditRepositoryFactory,accountsFactory?:AccountsServiceFactory) {
 const app=express()
 const verifier=authVerifier??createSupabaseAuthService()
 const serviceFactory=catalogFactory??((token:string)=>new CatalogService(createCatalogRepository(token)))
@@ -38,6 +41,7 @@ const reservationServiceFactory=reservationFactory??((token:string)=>new Reserva
 const fineServiceFactory=fineFactory??((token:string)=>new FineService(createFineRepository(token)))
 const dsaServiceFactory=dsaFactory??((token:string)=>new DsaService(createDsaRepository(token)))
 const analyticsServiceFactory=analyticsFactory??((token:string)=>new AnalyticsService(createAnalyticsRepository(token)))
+const accountsServiceFactory=accountsFactory??(()=>new AccountsService(createAccountsRepository()))
 const clientOrigin=process.env.CLIENT_ORIGIN??'http://localhost:5173'
 app.disable('x-powered-by')
 app.set('trust proxy',1)
@@ -54,6 +58,7 @@ app.use('/api',createReservationRouter(verifier,reservationServiceFactory))
 app.use('/api',createFineRouter(verifier,fineServiceFactory))
 app.use('/api',createDsaRouter(verifier,dsaServiceFactory))
 app.use('/api',createAnalyticsRouter(verifier,analyticsServiceFactory))
+app.use('/api',createAccountsRouter(verifier,accountsServiceFactory))
 app.use((_request,response)=>{sendApiError(response,404,'ROUTE_NOT_FOUND','Route not found')})
 app.use((error:unknown,_request:Request,response:Response,_next:NextFunction)=>{if(error instanceof SyntaxError){sendApiError(response,400,'INVALID_JSON','Request body must contain valid JSON');return}console.error(error);sendApiError(response,500,'INTERNAL_ERROR','An unexpected server error occurred')})
 return app

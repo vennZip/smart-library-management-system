@@ -1,0 +1,9 @@
+import { Router } from 'express'
+import type { AuthVerifier } from '../auth/supabase-auth.service.js'
+import { sendApiError } from '../http/api-error.js'
+import { authenticate,authorize,type AuthenticatedRequest } from '../middleware/auth.middleware.js'
+import { AccountValidationError,type AccountsService } from '../services/accounts.service.js'
+
+export type AccountsServiceFactory=()=>AccountsService
+function fail(error:unknown,response:Parameters<typeof sendApiError>[0]){if(error instanceof AccountValidationError){sendApiError(response,400,'ACCOUNT_INVALID',error.message);return}console.error(error);sendApiError(response,500,'ACCOUNT_OPERATION_FAILED',error instanceof Error?error.message:'Account operation failed')}
+export function createAccountsRouter(verifier:AuthVerifier,factory:AccountsServiceFactory):Router{const router=Router();router.use(authenticate(verifier),authorize('admin'));router.get('/admin/accounts',async(_request,response)=>{try{response.json({accounts:await factory().list()})}catch(error){fail(error,response)}});router.post('/admin/accounts',async(request,response)=>{try{response.status(201).json({account:await factory().create(request.body as Record<string,unknown>)})}catch(error){fail(error,response)}});router.patch('/admin/accounts/:id',async(request:AuthenticatedRequest,response)=>{try{const account=await factory().update(String(request.params.id),request.authUser?.id??'',request.body as Record<string,unknown>);if(!account){sendApiError(response,404,'ACCOUNT_NOT_FOUND','Account not found');return}response.json({account})}catch(error){fail(error,response)}});router.post('/admin/accounts/:id/password',async(request,response)=>{try{const updated=await factory().resetPassword(String(request.params.id),request.body as Record<string,unknown>);if(!updated){sendApiError(response,404,'ACCOUNT_NOT_FOUND','Account not found');return}response.status(204).end()}catch(error){fail(error,response)}});return router}
