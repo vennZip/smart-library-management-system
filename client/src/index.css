@@ -4,6 +4,29 @@
 @keyframes menu-drop { from { opacity:0; transform:translateY(-.75rem) scaleY(.96); } to { opacity:1; transform:translateY(0) scaleY(1); } }
 @keyframes page-enter { from { opacity:0; transform:translateY(.5rem); } to { opacity:1; transform:translateY(0); } }
 @keyframes dialog-enter { from { opacity:0; transform:translateY(1rem) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes welcome-confetti-burst { 0% { opacity:1; transform:translate(-50%,-50%) rotate(0deg) scale(.7); } 100% { opacity:0; transform:translate(calc(-50% + var(--confetti-x)),calc(-50% + var(--confetti-y))) rotate(var(--confetti-r)) scale(1); } }
+.welcome-confetti { position:fixed; inset:0; z-index:60; overflow:hidden; pointer-events:none; }
+.welcome-confetti-piece { position:absolute; left:50%; top:52%; width:.65rem; height:1.1rem; background:var(--color-gold); animation:welcome-confetti-burst .7s cubic-bezier(.15,.75,.25,1) both; }
+.welcome-confetti-piece:nth-child(3n) { background:var(--color-forest-light); border-radius:999px; }
+.welcome-confetti-piece:nth-child(3n+2) { background:#fff; border:1px solid var(--color-forest); }
+.welcome-confetti-piece:nth-child(1) { --confetti-x:-18rem; --confetti-y:-16rem; --confetti-r:-240deg; }
+.welcome-confetti-piece:nth-child(2) { --confetti-x:-14rem; --confetti-y:-21rem; --confetti-r:190deg; }
+.welcome-confetti-piece:nth-child(3) { --confetti-x:-10rem; --confetti-y:-13rem; --confetti-r:-150deg; }
+.welcome-confetti-piece:nth-child(4) { --confetti-x:-7rem; --confetti-y:-23rem; --confetti-r:280deg; }
+.welcome-confetti-piece:nth-child(5) { --confetti-x:-4rem; --confetti-y:-17rem; --confetti-r:-210deg; }
+.welcome-confetti-piece:nth-child(6) { --confetti-x:-1rem; --confetti-y:-25rem; --confetti-r:320deg; }
+.welcome-confetti-piece:nth-child(7) { --confetti-x:3rem; --confetti-y:-18rem; --confetti-r:-250deg; }
+.welcome-confetti-piece:nth-child(8) { --confetti-x:7rem; --confetti-y:-24rem; --confetti-r:220deg; }
+.welcome-confetti-piece:nth-child(9) { --confetti-x:11rem; --confetti-y:-15rem; --confetti-r:-300deg; }
+.welcome-confetti-piece:nth-child(10) { --confetti-x:15rem; --confetti-y:-21rem; --confetti-r:180deg; }
+.welcome-confetti-piece:nth-child(11) { --confetti-x:19rem; --confetti-y:-13rem; --confetti-r:-240deg; }
+.welcome-confetti-piece:nth-child(12) { --confetti-x:-20rem; --confetti-y:-7rem; --confetti-r:270deg; }
+.welcome-confetti-piece:nth-child(13) { --confetti-x:-15rem; --confetti-y:-4rem; --confetti-r:-180deg; }
+.welcome-confetti-piece:nth-child(14) { --confetti-x:-9rem; --confetti-y:2rem; --confetti-r:240deg; }
+.welcome-confetti-piece:nth-child(15) { --confetti-x:8rem; --confetti-y:1rem; --confetti-r:-270deg; }
+.welcome-confetti-piece:nth-child(16) { --confetti-x:14rem; --confetti-y:-3rem; --confetti-r:210deg; }
+.welcome-confetti-piece:nth-child(17) { --confetti-x:20rem; --confetti-y:-7rem; --confetti-r:-220deg; }
+.welcome-confetti-piece:nth-child(18) { --confetti-x:2rem; --confetti-y:-11rem; --confetti-r:300deg; }
 @utility animate-menu-drop { animation:menu-drop .2s ease-out both; }
 @utility animate-page-enter { animation:page-enter .24s ease-out both; }
 @utility animate-dialog-enter { animation:dialog-enter .2s ease-out both; }
