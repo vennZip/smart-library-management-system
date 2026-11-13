@@ -1,3 +1,9 @@
 @import "tailwindcss";
 @theme { --color-ink:#14251a; --color-forest:#166534; --color-forest-light:#15803d; --color-paper:#f4f9f5; --color-surface:#ffffff; --color-line:#d4e4d7; --color-muted:#607066; --color-gold:#f4c430; --font-sans:Inter,ui-sans-serif,system-ui,sans-serif; --font-serif:Georgia,Cambria,"Times New Roman",serif; }
 @layer base { * { box-sizing:border-box; } html { background:var(--color-paper); scroll-behavior:smooth; } body { margin:0; min-width:320px; min-height:100vh; color:var(--color-ink); background:var(--color-paper); } button,input,select,textarea { font:inherit; } button:not(:disabled),a,select { cursor:pointer; } :focus-visible { outline:3px solid var(--color-gold); outline-offset:2px; } @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}} }
+@keyframes menu-drop { from { opacity:0; transform:translateY(-.75rem) scaleY(.96); } to { opacity:1; transform:translateY(0) scaleY(1); } }
+@keyframes page-enter { from { opacity:0; transform:translateY(.5rem); } to { opacity:1; transform:translateY(0); } }
+@keyframes dialog-enter { from { opacity:0; transform:translateY(1rem) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+@utility animate-menu-drop { animation:menu-drop .2s ease-out both; }
+@utility animate-page-enter { animation:page-enter .24s ease-out both; }
+@utility animate-dialog-enter { animation:dialog-enter .2s ease-out both; }
