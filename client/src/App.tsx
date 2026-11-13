@@ -6,6 +6,11 @@ import { AppLayout } from "./components/layout/AppLayout";
 const LoginPage = lazy(() =>
   import("./pages/LoginPage").then((module) => ({ default: module.LoginPage })),
 );
+const WelcomePage = lazy(() =>
+  import("./pages/WelcomePage").then((module) => ({
+    default: module.WelcomePage,
+  })),
+);
 const UnauthorizedPage = lazy(() =>
   import("./pages/UnauthorizedPage").then((module) => ({
     default: module.UnauthorizedPage,
@@ -75,6 +80,7 @@ export default function App() {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes>
+        <Route path="/" element={<WelcomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route
@@ -84,7 +90,7 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="catalog" element={<CatalogPage />} />
           <Route path="catalog/:id" element={<BookDetailsPage />} />
           <Route path="borrowing" element={<CirculationPage />} />

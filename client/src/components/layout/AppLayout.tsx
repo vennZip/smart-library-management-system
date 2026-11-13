@@ -21,7 +21,7 @@ type NavigationItem = {
   roles?: UserRole[];
 };
 const navigation: NavigationItem[] = [
-  { to: "/", label: "Overview", icon: "home", end: true },
+  { to: "/dashboard", label: "Overview", icon: "home", end: true },
   { to: "/catalog", label: "Book catalog", icon: "book" },
   { to: "/borrowing", label: "Borrowing", icon: "swap" },
   { to: "/reservations", label: "Reservations", icon: "bookmark" },

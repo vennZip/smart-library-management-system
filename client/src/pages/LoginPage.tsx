@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { Icon } from '../components/icons/Icon'
 
@@ -11,9 +11,9 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/dashboard'
 
-  if (!loading && user) return <Navigate to="/" replace />
+  if (!loading && user) return <Navigate to="/dashboard" replace />
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -44,6 +44,7 @@ export function LoginPage() {
     </section>
     <section className="flex items-center justify-center px-5 py-12 sm:px-10">
       <div className="w-full max-w-sm">
+        <Link className="mb-8 inline-flex items-center gap-2 text-xs font-semibold text-forest hover:underline" to="/"><span aria-hidden="true">←</span> Back to welcome</Link>
         <div className="mb-10 flex items-center gap-3 lg:hidden">
           <div className="grid size-10 place-items-center bg-forest text-white"><Icon name="book" /></div>
           <div><p className="font-serif text-lg leading-tight">CSCMINHS Library</p><p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted">School Library System</p></div>
