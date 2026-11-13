@@ -1,6 +1,6 @@
-# Northbridge Library
+# CSCMINHS Library System
 
-A full-stack web application for managing a university library's catalog, physical inventory, circulation, reservations, and account balances.
+A full-stack web application for managing the Cristobal S. Conducto Memorial Integrated National High School library catalog, physical inventory, circulation, reservations, and account balances.
 
 ## Features
 
