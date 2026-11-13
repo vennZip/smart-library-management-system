@@ -1,14 +1,200 @@
-import { useState } from 'react'
-import { traverseBookGraph } from '../../dsa/dsa.api'
-import type { GraphOverview,GraphTraversalResult } from '../../dsa/dsa.types'
-import { ComplexityTable } from './ComplexityTable'
-import { GraphDiagram } from './GraphDiagram'
+import { useState } from "react";
+import { traverseBookGraph } from "../../dsa/dsa.api";
+import type { GraphOverview, GraphTraversalResult } from "../../dsa/dsa.types";
+import { ComplexityTable } from "./ComplexityTable";
+import { GraphDiagram } from "./GraphDiagram";
 
-export function GraphPanel({data}:{data:GraphOverview}){
-  const[start,setStart]=useState(data.defaultStartId??'');const[mode,setMode]=useState<'bfs'|'dfs'>('bfs');const[depth,setDepth]=useState(2)
-  const[result,setResult]=useState<GraphTraversalResult|null>(null);const[loading,setLoading]=useState(false);const[error,setError]=useState('')
-  async function run(){if(!start)return;setLoading(true);setError('');try{setResult(await traverseBookGraph(start,mode,depth))}catch(reason){setError(reason instanceof Error?reason.message:'Graph traversal failed')}finally{setLoading(false)}}
-  const byId=new Map(data.nodes.map(node=>[node.id,node.title]))
-  return <section className="border border-line bg-surface p-4 sm:p-6"><header><p className="text-[11px] font-semibold uppercase tracking-[.18em] text-forest-light">Adjacency-list graph</p><h2 className="mt-1 font-serif text-2xl">{data.feature}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-muted">{data.rationale}</p></header><div className="mt-5 grid gap-4 sm:grid-cols-3"><Metric label="Vertices" value={data.nodes.length}/><Metric label="Undirected edges" value={data.edgeCount}/><Metric label="Build time" value={`${data.buildElapsedMs} ms`}/></div><GraphDiagram data={data}/><details className="mt-4 border border-line bg-paper"><summary className="px-4 py-3 text-sm font-semibold text-forest">Inspect adjacency records</summary><div className="grid gap-4 border-t border-line p-4 lg:grid-cols-2"><div className="max-h-72 overflow-y-auto"><h3 className="font-serif text-lg">Vertices</h3><ul className="mt-3 space-y-2">{data.nodes.map(node=><li className="flex items-center justify-between gap-3 border-t border-line pt-2 text-sm" key={node.id}><span>{node.title}<span className="block text-xs text-muted">{node.category}</span></span><span className="font-mono text-xs">degree {node.degree}</span></li>)}</ul></div><div className="max-h-72 overflow-y-auto"><h3 className="font-serif text-lg">Weighted edges</h3><ul className="mt-3 space-y-2">{data.edges.map(edge=><li className="border-t border-line pt-2 text-sm" key={`${edge.from}-${edge.to}`}><strong>{byId.get(edge.from)}</strong> ↔ <strong>{byId.get(edge.to)}</strong><span className="ml-2 font-mono text-xs text-forest">weight {edge.weight}</span><span className="block text-xs text-muted">{edge.reasons.join(', ')}</span></li>)}{!data.edges.length&&<li className="text-sm text-muted">No relationships were found in this snapshot.</li>}</ul></div></div></details><div className="mt-6 grid gap-3 border border-line bg-paper p-4 sm:grid-cols-[1fr_auto_auto_auto]"><label className="text-sm font-medium">Starting book<select className="mt-1 w-full border border-line bg-white px-3 py-2" value={start} onChange={event=>setStart(event.target.value)}>{data.nodes.map(node=><option key={node.id} value={node.id}>{node.title}</option>)}</select></label><label className="text-sm font-medium">Traversal<select className="mt-1 block border border-line bg-white px-3 py-2" value={mode} onChange={event=>setMode(event.target.value as 'bfs'|'dfs')}><option value="bfs">BFS</option><option value="dfs">DFS</option></select></label><label className="text-sm font-medium">Max depth<select className="mt-1 block border border-line bg-white px-3 py-2" value={depth} onChange={event=>setDepth(Number(event.target.value))}>{[1,2,3,4].map(value=><option key={value}>{value}</option>)}</select></label><button className="self-end bg-forest px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" disabled={loading||!start} onClick={()=>void run()}>{loading?'Traversing…':'Run'}</button></div>{error&&<p className="mt-3 text-sm text-red-700" role="alert">{error}</p>}{result&&<div className="mt-4 grid gap-4 lg:grid-cols-2" role="status"><article className="border border-line p-4"><h3 className="font-serif text-lg">{result.mode.toUpperCase()} visit order</h3><ol className="mt-3 space-y-2">{result.order.map((item,index)=><li className="flex gap-3 text-sm" key={item.book.id}><span className="grid size-6 place-items-center bg-forest text-xs text-white">{index+1}</span>{item.book.title} <span className="text-muted">depth {item.distance}</span></li>)}</ol><p className="mt-3 text-xs text-muted">Visited {result.visitedNodes} node(s) in {result.elapsedMs} ms.</p></article><article className="border border-line p-4"><h3 className="font-serif text-lg">Direct recommendations</h3><ol className="mt-3 space-y-2">{result.recommendations.map(item=><li className="text-sm" key={item.book.id}><strong>{item.book.title}</strong> <span className="font-mono text-xs text-forest">{item.weight}</span><span className="block text-xs text-muted">{item.reasons.join(', ')}</span></li>)}</ol></article></div>}<ComplexityTable rows={data.complexity}/></section>
+export function GraphPanel({ data }: { data: GraphOverview }) {
+  const [start, setStart] = useState(data.defaultStartId ?? "");
+  const [mode, setMode] = useState<"bfs" | "dfs">("bfs");
+  const [depth, setDepth] = useState(2);
+  const [result, setResult] = useState<GraphTraversalResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  async function run() {
+    if (!start) return;
+    setLoading(true);
+    setError("");
+    try {
+      setResult(await traverseBookGraph(start, mode, depth));
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : "Graph traversal failed",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+  const byId = new Map(data.nodes.map((node) => [node.id, node.title]));
+  return (
+    <section className="border border-line bg-surface p-4 sm:p-6">
+      <header>
+        <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-forest-light">
+          Related-title network
+        </p>
+        <h2 className="mt-1 font-serif text-2xl">{data.feature}</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+          {data.rationale}
+        </p>
+      </header>
+      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <Metric label="Vertices" value={data.nodes.length} />
+        <Metric label="Undirected edges" value={data.edgeCount} />
+        <Metric label="Build time" value={`${data.buildElapsedMs} ms`} />
+      </div>
+      <GraphDiagram data={data} />
+      <details className="mt-4 border border-line bg-paper">
+        <summary className="px-4 py-3 text-sm font-semibold text-forest">
+          Inspect adjacency records
+        </summary>
+        <div className="grid gap-4 border-t border-line p-4 lg:grid-cols-2">
+          <div className="max-h-72 overflow-y-auto">
+            <h3 className="font-serif text-lg">Vertices</h3>
+            <ul className="mt-3 space-y-2">
+              {data.nodes.map((node) => (
+                <li
+                  className="flex items-center justify-between gap-3 border-t border-line pt-2 text-sm"
+                  key={node.id}
+                >
+                  <span>
+                    {node.title}
+                    <span className="block text-xs text-muted">
+                      {node.category}
+                    </span>
+                  </span>
+                  <span className="font-mono text-xs">
+                    degree {node.degree}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="max-h-72 overflow-y-auto">
+            <h3 className="font-serif text-lg">Weighted edges</h3>
+            <ul className="mt-3 space-y-2">
+              {data.edges.map((edge) => (
+                <li
+                  className="border-t border-line pt-2 text-sm"
+                  key={`${edge.from}-${edge.to}`}
+                >
+                  <strong>{byId.get(edge.from)}</strong> ↔{" "}
+                  <strong>{byId.get(edge.to)}</strong>
+                  <span className="ml-2 font-mono text-xs text-forest">
+                    weight {edge.weight}
+                  </span>
+                  <span className="block text-xs text-muted">
+                    {edge.reasons.join(", ")}
+                  </span>
+                </li>
+              ))}
+              {!data.edges.length && (
+                <li className="text-sm text-muted">
+                  No relationships were found in this snapshot.
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </details>
+      <div className="mt-6 grid gap-3 border border-line bg-paper p-4 sm:grid-cols-[1fr_auto_auto_auto]">
+        <label className="text-sm font-medium">
+          Starting book
+          <select
+            className="mt-1 w-full border border-line bg-white px-3 py-2"
+            value={start}
+            onChange={(event) => setStart(event.target.value)}
+          >
+            {data.nodes.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm font-medium">
+          Traversal
+          <select
+            className="mt-1 block border border-line bg-white px-3 py-2"
+            value={mode}
+            onChange={(event) => setMode(event.target.value as "bfs" | "dfs")}
+          >
+            <option value="bfs">BFS</option>
+            <option value="dfs">DFS</option>
+          </select>
+        </label>
+        <label className="text-sm font-medium">
+          Max depth
+          <select
+            className="mt-1 block border border-line bg-white px-3 py-2"
+            value={depth}
+            onChange={(event) => setDepth(Number(event.target.value))}
+          >
+            {[1, 2, 3, 4].map((value) => (
+              <option key={value}>{value}</option>
+            ))}
+          </select>
+        </label>
+        <button
+          className="self-end bg-forest px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          disabled={loading || !start}
+          onClick={() => void run()}
+        >
+          {loading ? "Traversing…" : "Run"}
+        </button>
+      </div>
+      {error && (
+        <p className="mt-3 text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      )}
+      {result && (
+        <div className="mt-4 grid gap-4 lg:grid-cols-2" role="status">
+          <article className="border border-line p-4">
+            <h3 className="font-serif text-lg">
+              {result.mode.toUpperCase()} visit order
+            </h3>
+            <ol className="mt-3 space-y-2">
+              {result.order.map((item, index) => (
+                <li className="flex gap-3 text-sm" key={item.book.id}>
+                  <span className="grid size-6 place-items-center bg-forest text-xs text-white">
+                    {index + 1}
+                  </span>
+                  {item.book.title}{" "}
+                  <span className="text-muted">depth {item.distance}</span>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-3 text-xs text-muted">
+              Visited {result.visitedNodes} node(s) in {result.elapsedMs} ms.
+            </p>
+          </article>
+          <article className="border border-line p-4">
+            <h3 className="font-serif text-lg">Direct recommendations</h3>
+            <ol className="mt-3 space-y-2">
+              {result.recommendations.map((item) => (
+                <li className="text-sm" key={item.book.id}>
+                  <strong>{item.book.title}</strong>{" "}
+                  <span className="font-mono text-xs text-forest">
+                    {item.weight}
+                  </span>
+                  <span className="block text-xs text-muted">
+                    {item.reasons.join(", ")}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </article>
+        </div>
+      )}
+      <ComplexityTable rows={data.complexity} />
+    </section>
+  );
 }
-function Metric({label,value}:{label:string;value:string|number}){return <dl className="border border-line bg-paper p-3"><dt className="text-xs text-muted">{label}</dt><dd className="mt-1 font-semibold">{value}</dd></dl>}
+function Metric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <dl className="border border-line bg-paper p-3">
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="mt-1 font-semibold">{value}</dd>
+    </dl>
+  );
+}

@@ -1,7 +1,177 @@
-import { useMemo,useState,type FormEvent } from 'react'
-import { runCatalogAlgorithms } from '../../dsa/dsa.api'
-import type { AlgorithmMetrics,ArrayOverview,CatalogAlgorithmResult } from '../../dsa/dsa.types'
-import { ComplexityTable } from './ComplexityTable'
+import { useMemo, useState, type FormEvent } from "react";
+import { runCatalogAlgorithms } from "../../dsa/dsa.api";
+import type {
+  AlgorithmMetrics,
+  ArrayOverview,
+  CatalogAlgorithmResult,
+} from "../../dsa/dsa.types";
+import { ComplexityTable } from "./ComplexityTable";
 
-export function ArrayPanel({data}:{data:ArrayOverview}){const[query,setQuery]=useState('');const[category,setCategory]=useState('');const[sortBy,setSortBy]=useState<'title'|'rank'>('rank');const[result,setResult]=useState<CatalogAlgorithmResult>({items:data.items,filterMetrics:data.filterMetrics,sortMetrics:data.sortMetrics,rankMetrics:data.rankMetrics});const[loading,setLoading]=useState(false);const[error,setError]=useState('');const categories=useMemo(()=>{const values:string[]=[];for(const item of data.items)if(!values.includes(item.category))values.push(item.category);return values},[data.items]);async function run(event:FormEvent){event.preventDefault();setLoading(true);setError('');try{setResult(await runCatalogAlgorithms(query,category,sortBy))}catch(reason){setError(reason instanceof Error?reason.message:'Catalog algorithms failed')}finally{setLoading(false)}}return <section className="border border-line bg-surface p-4 sm:p-6"><header><p className="text-[11px] font-semibold uppercase tracking-[.18em] text-forest-light">Explicit array algorithms</p><h2 className="mt-1 font-serif text-2xl">{data.feature}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-muted">{data.rationale}</p></header><form className="mt-5 grid gap-3 border border-line bg-paper p-4 sm:grid-cols-2 lg:grid-cols-[1fr_220px_180px_auto]" onSubmit={run}><label className="text-sm font-medium">Title or author<input className="mt-1 w-full border border-line bg-white px-3 py-2" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Optional filter"/></label><label className="text-sm font-medium">Category<select className="mt-1 w-full border border-line bg-white px-3 py-2" value={category} onChange={event=>setCategory(event.target.value)}><option value="">All categories</option>{categories.map(item=><option key={item}>{item}</option>)}</select></label><label className="text-sm font-medium">Final ordering<select className="mt-1 w-full border border-line bg-white px-3 py-2" value={sortBy} onChange={event=>setSortBy(event.target.value as 'title'|'rank')}><option value="rank">Borrowing rank</option><option value="title">Title</option></select></label><button className="self-end bg-forest px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" disabled={loading}>{loading?'Running…':'Run pipeline'}</button></form>{error&&<p className="mt-3 text-sm text-red-700" role="alert">{error}</p>}<div className="mt-5 grid gap-3 sm:grid-cols-3"><MetricCard title="Manual filter" metrics={result.filterMetrics}/><MetricCard title="Stable merge sort" metrics={result.sortMetrics}/><MetricCard title="Score + rank" metrics={result.rankMetrics}/></div><div className="mt-5 overflow-x-auto border border-line"><table className="w-full min-w-[680px] text-left text-sm"><thead className="bg-paper text-xs uppercase tracking-wider text-muted"><tr><th className="px-4 py-3">Rank</th><th className="px-4 py-3">Title</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Loan count</th><th className="px-4 py-3">Score</th></tr></thead><tbody className="divide-y divide-line">{result.items.map((item,index)=><tr key={item.id}><td className="px-4 py-3 font-mono">{index+1}</td><td className="px-4 py-3"><strong>{item.title}</strong><span className="block text-xs text-muted">{item.author}</span></td><td className="px-4 py-3 text-muted">{item.category}</td><td className="px-4 py-3">{item.loanCount}</td><td className="px-4 py-3 font-mono text-forest">{item.score}</td></tr>)}{!result.items.length&&<tr><td className="px-4 py-10 text-center text-muted" colSpan={5}>No catalog records match this filter.</td></tr>}</tbody></table></div><ComplexityTable rows={data.complexity}/></section>}
-function MetricCard({title,metrics}:{title:string;metrics:AlgorithmMetrics}){return <article className="border border-line bg-paper p-3"><h3 className="font-medium">{title}</h3><dl className="mt-2 grid grid-cols-3 gap-2 text-xs"><div><dt className="text-muted">Input</dt><dd className="mt-1 font-mono">{metrics.inputSize}</dd></div><div><dt className="text-muted">Comparisons</dt><dd className="mt-1 font-mono">{metrics.comparisons}</dd></div><div><dt className="text-muted">Time</dt><dd className="mt-1 font-mono">{metrics.elapsedMs} ms</dd></div></dl></article>}
+export function ArrayPanel({ data }: { data: ArrayOverview }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState<"title" | "rank">("rank");
+  const [result, setResult] = useState<CatalogAlgorithmResult>({
+    items: data.items,
+    filterMetrics: data.filterMetrics,
+    sortMetrics: data.sortMetrics,
+    rankMetrics: data.rankMetrics,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const categories = useMemo(() => {
+    const values: string[] = [];
+    for (const item of data.items)
+      if (!values.includes(item.category)) values.push(item.category);
+    return values;
+  }, [data.items]);
+  async function run(event: FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      setResult(await runCatalogAlgorithms(query, category, sortBy));
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : "Catalog algorithms failed",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <section className="border border-line bg-surface p-4 sm:p-6">
+      <header>
+        <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-forest-light">
+          Catalog analysis pipeline
+        </p>
+        <h2 className="mt-1 font-serif text-2xl">{data.feature}</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+          {data.rationale}
+        </p>
+      </header>
+      <form
+        className="mt-5 grid gap-3 border border-line bg-paper p-4 sm:grid-cols-2 lg:grid-cols-[1fr_220px_180px_auto]"
+        onSubmit={run}
+      >
+        <label className="text-sm font-medium">
+          Title or author
+          <input
+            className="mt-1 w-full border border-line bg-white px-3 py-2"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Optional filter"
+          />
+        </label>
+        <label className="text-sm font-medium">
+          Category
+          <select
+            className="mt-1 w-full border border-line bg-white px-3 py-2"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          >
+            <option value="">All categories</option>
+            {categories.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm font-medium">
+          Final ordering
+          <select
+            className="mt-1 w-full border border-line bg-white px-3 py-2"
+            value={sortBy}
+            onChange={(event) =>
+              setSortBy(event.target.value as "title" | "rank")
+            }
+          >
+            <option value="rank">Borrowing rank</option>
+            <option value="title">Title</option>
+          </select>
+        </label>
+        <button
+          className="self-end bg-forest px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          disabled={loading}
+        >
+          {loading ? "Running…" : "Run pipeline"}
+        </button>
+      </form>
+      {error && (
+        <p className="mt-3 text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      )}
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <MetricCard title="Manual filter" metrics={result.filterMetrics} />
+        <MetricCard title="Stable merge sort" metrics={result.sortMetrics} />
+        <MetricCard title="Score + rank" metrics={result.rankMetrics} />
+      </div>
+      <div className="mt-5 overflow-x-auto border border-line">
+        <table className="w-full min-w-[680px] text-left text-sm">
+          <thead className="bg-paper text-xs uppercase tracking-wider text-muted">
+            <tr>
+              <th className="px-4 py-3">Rank</th>
+              <th className="px-4 py-3">Title</th>
+              <th className="px-4 py-3">Category</th>
+              <th className="px-4 py-3">Loan count</th>
+              <th className="px-4 py-3">Score</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {result.items.map((item, index) => (
+              <tr key={item.id}>
+                <td className="px-4 py-3 font-mono">{index + 1}</td>
+                <td className="px-4 py-3">
+                  <strong>{item.title}</strong>
+                  <span className="block text-xs text-muted">
+                    {item.author}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-muted">{item.category}</td>
+                <td className="px-4 py-3">{item.loanCount}</td>
+                <td className="px-4 py-3 font-mono text-forest">
+                  {item.score}
+                </td>
+              </tr>
+            ))}
+            {!result.items.length && (
+              <tr>
+                <td className="px-4 py-10 text-center text-muted" colSpan={5}>
+                  No catalog records match this filter.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <ComplexityTable rows={data.complexity} />
+    </section>
+  );
+}
+function MetricCard({
+  title,
+  metrics,
+}: {
+  title: string;
+  metrics: AlgorithmMetrics;
+}) {
+  return (
+    <article className="border border-line bg-paper p-3">
+      <h3 className="font-medium">{title}</h3>
+      <dl className="mt-2 grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <dt className="text-muted">Input</dt>
+          <dd className="mt-1 font-mono">{metrics.inputSize}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Comparisons</dt>
+          <dd className="mt-1 font-mono">{metrics.comparisons}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">Time</dt>
+          <dd className="mt-1 font-mono">{metrics.elapsedMs} ms</dd>
+        </div>
+      </dl>
+    </article>
+  );
+}

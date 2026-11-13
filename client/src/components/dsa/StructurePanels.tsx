@@ -1,17 +1,333 @@
-import type { DsaOverview } from '../../dsa/dsa.types'
-import { ComplexityTable } from './ComplexityTable'
+import type { DsaOverview } from "../../dsa/dsa.types";
+import { ComplexityTable } from "./ComplexityTable";
 
-function Header({label,title,description}:{label:string;title:string;description:string}){return <header><p className="text-[11px] font-semibold uppercase tracking-[.18em] text-forest-light">{label}</p><h2 className="mt-1 font-serif text-2xl">{title}</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-muted">{description}</p></header>}
-function short(id:string|null){return id?id.slice(0,8):'null'}
+function Header({
+  label,
+  title,
+  description,
+}: {
+  label: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <header>
+      <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-forest-light">
+        {label}
+      </p>
+      <h2 className="mt-1 font-serif text-2xl">{title}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+        {description}
+      </p>
+    </header>
+  );
+}
+function short(id: string | null) {
+  return id ? id.slice(0, 8) : "null";
+}
 
-export function LinkedListPanel({data}:{data:DsaOverview['linkedList']}){return <section className="border border-line bg-surface p-4 sm:p-6"><Header label="Singly linked list" title={data.feature} description={data.rationale}/><div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted"><span>Head: <strong className="font-mono text-ink">{short(data.headId)}</strong></span><span>Tail: <strong className="font-mono text-ink">{short(data.tailId)}</strong></span><span>Nodes: <strong className="text-ink">{data.size}</strong></span></div>{data.nodes.length?<div className="mt-5 flex snap-x items-center overflow-x-auto border border-line bg-paper p-4" aria-label="Loan linked-list pointer diagram">{data.nodes.map((node,index)=><div className="flex shrink-0 snap-start items-center" key={node.id}><article className="w-56 border-2 border-forest bg-surface"><div className="p-3"><p className="font-medium">{node.bookTitle}</p><p className="mt-1 text-xs text-muted">{node.memberName} · {node.barcode}</p></div><div className="grid grid-cols-[1fr_78px] border-t border-forest text-[11px]"><span className="px-3 py-2 text-muted">data #{index+1}</span><span className="border-l border-forest bg-paper px-2 py-2 text-center font-mono">{short(node.nextId)}</span></div></article>{index<data.nodes.length-1&&<div className="flex items-center px-2 text-forest" aria-hidden="true"><span className="h-px w-8 bg-forest"/><span className="text-lg">▶</span></div>}</div>)}</div>:<EmptyLinkedList/>}<ComplexityTable rows={data.complexity}/></section>}
+export function LinkedListPanel({ data }: { data: DsaOverview["linkedList"] }) {
+  return (
+    <section className="border border-line bg-surface p-4 sm:p-6">
+      <Header
+        label="Borrowing sequence"
+        title={data.feature}
+        description={data.rationale}
+      />
+      <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted">
+        <span>
+          Head:{" "}
+          <strong className="font-mono text-ink">{short(data.headId)}</strong>
+        </span>
+        <span>
+          Tail:{" "}
+          <strong className="font-mono text-ink">{short(data.tailId)}</strong>
+        </span>
+        <span>
+          Nodes: <strong className="text-ink">{data.size}</strong>
+        </span>
+      </div>
+      {data.nodes.length ? (
+        <div
+          className="mt-5 flex snap-x items-center overflow-x-auto border border-line bg-paper p-4"
+          aria-label="Loan linked-list pointer diagram"
+        >
+          {data.nodes.map((node, index) => (
+            <div
+              className="flex shrink-0 snap-start items-center"
+              key={node.id}
+            >
+              <article className="w-56 border-2 border-forest bg-surface">
+                <div className="p-3">
+                  <p className="font-medium">{node.bookTitle}</p>
+                  <p className="mt-1 text-xs text-muted">
+                    {node.memberName} · {node.barcode}
+                  </p>
+                </div>
+                <div className="grid grid-cols-[1fr_78px] border-t border-forest text-[11px]">
+                  <span className="px-3 py-2 text-muted">
+                    data #{index + 1}
+                  </span>
+                  <span className="border-l border-forest bg-paper px-2 py-2 text-center font-mono">
+                    {short(node.nextId)}
+                  </span>
+                </div>
+              </article>
+              {index < data.nodes.length - 1 && (
+                <div
+                  className="flex items-center px-2 text-forest"
+                  aria-hidden="true"
+                >
+                  <span className="h-px w-8 bg-forest" />
+                  <span className="text-lg">▶</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyLinkedList />
+      )}
+      <ComplexityTable rows={data.complexity} />
+    </section>
+  );
+}
 
-function EmptyLinkedList(){return <div className="mt-5 overflow-x-auto border border-dashed border-line bg-paper p-6" role="img" aria-label="Empty linked list pointer diagram"><div className="mx-auto flex min-w-[360px] max-w-lg items-center justify-center"><span className="border-2 border-forest bg-surface px-5 py-3 text-sm font-semibold">HEAD</span><span className="h-px w-16 bg-forest"/><span className="text-forest" aria-hidden="true">▶</span><span className="border border-line bg-surface px-6 py-3 font-mono text-sm">null</span></div><p className="mt-4 text-center text-sm text-muted">An empty list points its head and tail to null. Loan nodes appear here in traversal order.</p></div>}
+function EmptyLinkedList() {
+  return (
+    <div
+      className="mt-5 overflow-x-auto border border-dashed border-line bg-paper p-6"
+      role="img"
+      aria-label="Empty linked list pointer diagram"
+    >
+      <div className="mx-auto flex min-w-[360px] max-w-lg items-center justify-center">
+        <span className="border-2 border-forest bg-surface px-5 py-3 text-sm font-semibold">
+          HEAD
+        </span>
+        <span className="h-px w-16 bg-forest" />
+        <span className="text-forest" aria-hidden="true">
+          ▶
+        </span>
+        <span className="border border-line bg-surface px-6 py-3 font-mono text-sm">
+          null
+        </span>
+      </div>
+      <p className="mt-4 text-center text-sm text-muted">
+        An empty list points its head and tail to null. Loan nodes appear here
+        in traversal order.
+      </p>
+    </div>
+  );
+}
 
-export function QueuePanel({data}:{data:DsaOverview['queue']}){return <section className="border border-line bg-surface p-4 sm:p-6"><Header label="FIFO queue" title={data.feature} description={data.rationale}/><p className="mt-4 text-sm"><strong>{data.totalWaiting}</strong> pending reservations across <strong>{data.groups.length}</strong> title queues</p>{data.groups.length?<div className="mt-5 grid gap-4">{data.groups.map(group=><article className="border border-line bg-paper p-4" key={group.bookId}><h3 className="font-serif text-lg">{group.bookTitle}</h3><div className="mt-4 overflow-x-auto"><div className="flex min-w-max items-center"><span className="mr-3 text-[10px] font-bold uppercase tracking-wider text-forest">Front / dequeue</span>{group.members.map((member,index)=><div className="flex items-center" key={member.reservationId}><div className={`min-w-36 border-2 p-3 text-center ${index===0?'border-gold bg-amber-50':'border-forest bg-surface'}`}><span className="block text-xs font-bold">Position {member.position}</span><span className="mt-1 block text-sm">{member.memberName}</span></div>{index<group.members.length-1&&<span className="px-2 text-forest" aria-hidden="true">→</span>}</div>)}<span className="ml-3 text-[10px] font-bold uppercase tracking-wider text-muted">Rear / enqueue</span></div></div></article>)}</div>:<EmptyQueue/>}<ComplexityTable rows={data.complexity}/></section>}
-function EmptyQueue(){return <div className="mt-5 border border-dashed border-line bg-paper p-6 text-center" role="img" aria-label="Empty FIFO queue diagram"><div className="mx-auto flex max-w-xl items-center justify-center gap-3 text-xs font-bold uppercase tracking-wider"><span className="text-forest">Front</span><span className="h-12 flex-1 border-y-2 border-forest bg-surface"/><span className="text-muted">Rear</span></div><p className="mt-4 text-sm text-muted">New reservations enter at the rear; assignment removes the oldest request from the front.</p></div>}
+export function QueuePanel({ data }: { data: DsaOverview["queue"] }) {
+  return (
+    <section className="border border-line bg-surface p-4 sm:p-6">
+      <Header
+        label="Reservation order"
+        title={data.feature}
+        description={data.rationale}
+      />
+      <p className="mt-4 text-sm">
+        <strong>{data.totalWaiting}</strong> pending reservations across{" "}
+        <strong>{data.groups.length}</strong> title queues
+      </p>
+      {data.groups.length ? (
+        <div className="mt-5 grid gap-4">
+          {data.groups.map((group) => (
+            <article
+              className="border border-line bg-paper p-4"
+              key={group.bookId}
+            >
+              <h3 className="font-serif text-lg">{group.bookTitle}</h3>
+              <div className="mt-4 overflow-x-auto">
+                <div className="flex min-w-max items-center">
+                  <span className="mr-3 text-[10px] font-bold uppercase tracking-wider text-forest">
+                    Front / dequeue
+                  </span>
+                  {group.members.map((member, index) => (
+                    <div
+                      className="flex items-center"
+                      key={member.reservationId}
+                    >
+                      <div
+                        className={`min-w-36 border-2 p-3 text-center ${index === 0 ? "border-gold bg-amber-50" : "border-forest bg-surface"}`}
+                      >
+                        <span className="block text-xs font-bold">
+                          Position {member.position}
+                        </span>
+                        <span className="mt-1 block text-sm">
+                          {member.memberName}
+                        </span>
+                      </div>
+                      {index < group.members.length - 1 && (
+                        <span className="px-2 text-forest" aria-hidden="true">
+                          →
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  <span className="ml-3 text-[10px] font-bold uppercase tracking-wider text-muted">
+                    Rear / enqueue
+                  </span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyQueue />
+      )}
+      <ComplexityTable rows={data.complexity} />
+    </section>
+  );
+}
+function EmptyQueue() {
+  return (
+    <div
+      className="mt-5 border border-dashed border-line bg-paper p-6 text-center"
+      role="img"
+      aria-label="Empty FIFO queue diagram"
+    >
+      <div className="mx-auto flex max-w-xl items-center justify-center gap-3 text-xs font-bold uppercase tracking-wider">
+        <span className="text-forest">Front</span>
+        <span className="h-12 flex-1 border-y-2 border-forest bg-surface" />
+        <span className="text-muted">Rear</span>
+      </div>
+      <p className="mt-4 text-sm text-muted">
+        New reservations enter at the rear; assignment removes the oldest
+        request from the front.
+      </p>
+    </div>
+  );
+}
 
-export function StackPanel({data}:{data:DsaOverview['stack']}){return <section className="border border-line bg-surface p-4 sm:p-6"><Header label="LIFO stack" title={data.feature} description={data.rationale}/><div className="mx-auto mt-5 max-w-xl"><div className="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider text-forest"><span>Pop</span><span aria-hidden="true">↑</span><span>Push</span><span aria-hidden="true">↓</span></div><div className="flex flex-col">{data.items.map((item,index)=><article className={`border-2 p-3 ${index===0?'border-gold bg-forest text-white':'border-t-0 border-forest bg-paper'}`} key={item.id}><div className="flex items-center justify-between gap-4"><div><p className="font-medium">{item.title}</p><p className={`mt-1 font-mono text-xs ${index===0?'text-white/60':'text-muted'}`}>{item.isbn}</p></div><span className="text-xs">{index===0?'TOP / next review':`depth ${item.depth}`}</span></div></article>)}{!data.items.length&&<div className="border-x-2 border-b-2 border-forest bg-paper py-10 text-center text-sm text-muted">Empty stack</div>}</div></div><ComplexityTable rows={data.complexity}/></section>}
+export function StackPanel({ data }: { data: DsaOverview["stack"] }) {
+  return (
+    <section className="border border-line bg-surface p-4 sm:p-6">
+      <Header
+        label="Recent-first review"
+        title={data.feature}
+        description={data.rationale}
+      />
+      <div className="mx-auto mt-5 max-w-xl">
+        <div className="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider text-forest">
+          <span>Pop</span>
+          <span aria-hidden="true">↑</span>
+          <span>Push</span>
+          <span aria-hidden="true">↓</span>
+        </div>
+        <div className="flex flex-col">
+          {data.items.map((item, index) => (
+            <article
+              className={`border-2 p-3 ${index === 0 ? "border-gold bg-forest text-white" : "border-t-0 border-forest bg-paper"}`}
+              key={item.id}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-medium">{item.title}</p>
+                  <p
+                    className={`mt-1 font-mono text-xs ${index === 0 ? "text-white/60" : "text-muted"}`}
+                  >
+                    {item.isbn}
+                  </p>
+                </div>
+                <span className="text-xs">
+                  {index === 0 ? "TOP / next review" : `depth ${item.depth}`}
+                </span>
+              </div>
+            </article>
+          ))}
+          {!data.items.length && (
+            <div className="border-x-2 border-b-2 border-forest bg-paper py-10 text-center text-sm text-muted">
+              Empty stack
+            </div>
+          )}
+        </div>
+      </div>
+      <ComplexityTable rows={data.complexity} />
+    </section>
+  );
+}
 
-export function HashSetPanel({data}:{data:DsaOverview['hashSet']}){return <section className="border border-line bg-surface p-4 sm:p-6"><Header label="Separate-chaining HashSet" title={data.feature} description={data.rationale}/><div className="mt-5 grid gap-4 sm:grid-cols-2"><HashAudit title="ISBN index" audit={data.isbn}/><HashAudit title="Barcode index" audit={data.barcodes}/></div><ComplexityTable rows={data.complexity}/></section>}
-function HashAudit({title,audit}:{title:string;audit:DsaOverview['hashSet']['isbn']}){const cells=Math.min(24,audit.statistics.bucketCount);const filled=Math.round(cells*(audit.statistics.usedBuckets/Math.max(1,audit.statistics.bucketCount)));return <article className="border border-line bg-paper p-4"><h3 className="font-serif text-lg">{title}</h3><dl className="mt-3 grid grid-cols-2 gap-3 text-sm"><div><dt className="text-xs text-muted">Unique values</dt><dd className="mt-1 font-semibold">{audit.unique}</dd></div><div><dt className="text-xs text-muted">Collisions</dt><dd className="mt-1 font-semibold">{audit.statistics.collisions}</dd></div><div><dt className="text-xs text-muted">Buckets used</dt><dd className="mt-1">{audit.statistics.usedBuckets} / {audit.statistics.bucketCount}</dd></div><div><dt className="text-xs text-muted">Load factor</dt><dd className="mt-1 font-mono">{audit.statistics.loadFactor.toFixed(2)}</dd></div></dl><div className="mt-4"><p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted">Aggregate bucket utilization</p><div className="grid grid-cols-12 gap-1" role="img" aria-label={`${audit.statistics.usedBuckets} of ${audit.statistics.bucketCount} hash buckets used`}>{Array.from({length:cells},(_,index)=><span className={`h-5 border ${index<filled?'border-forest bg-forest':'border-line bg-surface'}`} key={index}/>)}</div></div><p className={`mt-4 border-l-2 px-3 py-2 text-xs ${audit.duplicates.length?'border-red-600 bg-red-50 text-red-800':'border-emerald-600 bg-emerald-50 text-emerald-800'}`}>{audit.duplicates.length?`${audit.duplicates.length} duplicate values detected`:'No duplicates detected'}</p></article>}
+export function HashSetPanel({ data }: { data: DsaOverview["hashSet"] }) {
+  return (
+    <section className="border border-line bg-surface p-4 sm:p-6">
+      <Header
+        label="Identifier integrity"
+        title={data.feature}
+        description={data.rationale}
+      />
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <HashAudit title="ISBN index" audit={data.isbn} />
+        <HashAudit title="Barcode index" audit={data.barcodes} />
+      </div>
+      <ComplexityTable rows={data.complexity} />
+    </section>
+  );
+}
+function HashAudit({
+  title,
+  audit,
+}: {
+  title: string;
+  audit: DsaOverview["hashSet"]["isbn"];
+}) {
+  const cells = Math.min(24, audit.statistics.bucketCount);
+  const filled = Math.round(
+    cells *
+      (audit.statistics.usedBuckets /
+        Math.max(1, audit.statistics.bucketCount)),
+  );
+  return (
+    <article className="border border-line bg-paper p-4">
+      <h3 className="font-serif text-lg">{title}</h3>
+      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <dt className="text-xs text-muted">Unique values</dt>
+          <dd className="mt-1 font-semibold">{audit.unique}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted">Collisions</dt>
+          <dd className="mt-1 font-semibold">{audit.statistics.collisions}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted">Buckets used</dt>
+          <dd className="mt-1">
+            {audit.statistics.usedBuckets} / {audit.statistics.bucketCount}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted">Load factor</dt>
+          <dd className="mt-1 font-mono">
+            {audit.statistics.loadFactor.toFixed(2)}
+          </dd>
+        </div>
+      </dl>
+      <div className="mt-4">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted">
+          Aggregate bucket utilization
+        </p>
+        <div
+          className="grid grid-cols-12 gap-1"
+          role="img"
+          aria-label={`${audit.statistics.usedBuckets} of ${audit.statistics.bucketCount} hash buckets used`}
+        >
+          {Array.from({ length: cells }, (_, index) => (
+            <span
+              className={`h-5 border ${index < filled ? "border-forest bg-forest" : "border-line bg-surface"}`}
+              key={index}
+            />
+          ))}
+        </div>
+      </div>
+      <p
+        className={`mt-4 border-l-2 px-3 py-2 text-xs ${audit.duplicates.length ? "border-red-600 bg-red-50 text-red-800" : "border-emerald-600 bg-emerald-50 text-emerald-800"}`}
+      >
+        {audit.duplicates.length
+          ? `${audit.duplicates.length} duplicate values detected`
+          : "No duplicates detected"}
+      </p>
+    </article>
+  );
+}

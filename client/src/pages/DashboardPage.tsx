@@ -2,5 +2,33 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { Icon } from '../components/icons/Icon'
 
-const primary=[{to:'/catalog',title:'Explore the catalog',description:'Search titles and inspect live physical-copy availability.',icon:'book' as const},{to:'/borrowing',title:'Borrowing records',description:'Review loan history or manage checkout and returns as staff.',icon:'swap' as const},{to:'/reservations',title:'Reservations',description:'Track personal requests or operate FIFO waitlists.',icon:'bookmark' as const},{to:'/fines',title:'Fines and payments',description:'Review balances, payments, and authorized adjustments.',icon:'wallet' as const}]
-export function DashboardPage(){const{user,role}=useAuth();const name=typeof user?.user_metadata.full_name==='string'?user.user_metadata.full_name:user?.email?.split('@')[0]??'Library user';const staff=role==='admin'||role==='librarian';return <div className="mx-auto max-w-[1200px]"><header className="border-b border-line pb-7"><p className="text-xs font-semibold uppercase tracking-[.16em] text-forest-light">Library workspace</p><h1 className="mt-2 font-serif text-3xl tracking-tight sm:text-4xl">Welcome, <span className="capitalize">{name}</span></h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted">Choose a workflow below. Every operational figure is loaded from PostgreSQL on its destination page—this overview contains no fabricated statistics.</p></header><section className="mt-7" aria-labelledby="workflow-heading"><h2 id="workflow-heading" className="font-serif text-2xl">Core workflows</h2><div className="mt-4 grid gap-4 sm:grid-cols-2">{primary.map(item=><Link key={item.to} to={item.to} className="group flex min-h-36 items-start gap-4 border border-line bg-surface p-5 transition hover:border-forest focus-visible:border-forest"><span className="grid size-10 shrink-0 place-items-center bg-forest/8 text-forest"><Icon name={item.icon}/></span><span><span className="font-serif text-xl group-hover:text-forest">{item.title}</span><span className="mt-2 block text-sm leading-6 text-muted">{item.description}</span></span></Link>)}</div></section>{staff&&<section className="mt-8 border border-line bg-forest p-5 text-white sm:p-6" aria-labelledby="evidence-heading"><p className="text-xs font-semibold uppercase tracking-[.16em] text-gold">Staff evidence</p><h2 id="evidence-heading" className="mt-2 font-serif text-2xl">Inspect the system’s assessed implementation</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">The DSA lab rebuilds read-only educational structures from persistent records. Administrators can also review operational analytics and audit evidence.</p><div className="mt-5 flex flex-col gap-3 sm:flex-row"><Link className="bg-gold px-4 py-2.5 text-center text-sm font-semibold text-forest" to="/dsa-lab">Open DSA evidence lab</Link>{role==='admin'&&<Link className="border border-white/30 px-4 py-2.5 text-center text-sm font-semibold text-white" to="/analytics">Open admin analytics</Link>}</div></section>}</div>}
+const primary = [
+  { to: '/catalog', title: 'Explore the catalog', description: 'Search titles and inspect live physical-copy availability.', icon: 'book' as const },
+  { to: '/borrowing', title: 'Borrowing records', description: 'Review loan history or manage checkout and returns as staff.', icon: 'swap' as const },
+  { to: '/reservations', title: 'Reservations', description: 'Track personal requests or operate FIFO waitlists.', icon: 'bookmark' as const },
+  { to: '/fines', title: 'Fines and payments', description: 'Review balances, payments, and authorized adjustments.', icon: 'wallet' as const },
+]
+
+export function DashboardPage() {
+  const { user, role } = useAuth()
+  const name = typeof user?.user_metadata.full_name === 'string' ? user.user_metadata.full_name : user?.email?.split('@')[0] ?? 'Library user'
+  const staff = role === 'admin' || role === 'librarian'
+
+  return <div className="mx-auto max-w-[1200px]">
+    <header className="border-b border-line pb-7">
+      <p className="text-xs font-semibold uppercase tracking-[.16em] text-forest-light">Library workspace</p>
+      <h1 className="mt-2 font-serif text-3xl tracking-tight sm:text-4xl">Welcome, <span className="capitalize">{name}</span></h1>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">Choose a workflow below. Each page uses the latest available library records.</p>
+    </header>
+    <section className="mt-7" aria-labelledby="workflow-heading">
+      <h2 id="workflow-heading" className="font-serif text-2xl">Core workflows</h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">{primary.map(item => <Link key={item.to} to={item.to} className="group flex min-h-36 items-start gap-4 border border-line bg-surface p-5 transition hover:border-forest focus-visible:border-forest"><span className="grid size-10 shrink-0 place-items-center bg-forest/8 text-forest"><Icon name={item.icon} /></span><span><span className="font-serif text-xl group-hover:text-forest">{item.title}</span><span className="mt-2 block text-sm leading-6 text-muted">{item.description}</span></span></Link>)}</div>
+    </section>
+    {staff && <section className="mt-8 border border-line bg-forest p-5 text-white sm:p-6" aria-labelledby="insights-heading">
+      <p className="text-xs font-semibold uppercase tracking-[.16em] text-gold">Staff tools</p>
+      <h2 id="insights-heading" className="mt-2 font-serif text-2xl">Monitor collection operations</h2>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">Review circulation patterns, waitlist flow, catalog relationships, collection integrity, and administrative activity.</p>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row"><Link className="bg-gold px-4 py-2.5 text-center text-sm font-semibold text-forest" to="/collection-intelligence">Open collection intelligence</Link>{role === 'admin' && <Link className="border border-white/30 px-4 py-2.5 text-center text-sm font-semibold text-white" to="/analytics">Open admin analytics</Link>}</div>
+    </section>}
+  </div>
+}
