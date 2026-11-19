@@ -164,7 +164,7 @@ export function AppLayout() {
       <aside
         id="app-navigation"
         aria-label="Library navigation"
-        className={`fixed inset-y-0 right-0 z-30 flex w-[248px] translate-x-full flex-col overflow-y-auto bg-forest px-4 py-6 text-white transition-transform duration-200 lg:sticky lg:top-0 lg:col-start-2 lg:row-start-1 lg:h-screen lg:translate-x-0 ${open ? "translate-x-0" : ""}`}
+        className={`fixed inset-y-0 right-0 z-30 flex w-[248px] flex-col overflow-y-auto bg-forest px-4 py-6 text-white transition-transform duration-200 lg:sticky lg:top-0 lg:col-start-2 lg:row-start-1 lg:h-screen lg:translate-x-0 ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex items-center gap-3 px-2">
           <div className="grid size-10 place-items-center border border-white/30 bg-white/10">
