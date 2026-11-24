@@ -3,7 +3,7 @@ import type { DsaCatalogSource,DsaLoanSource,DsaReservationSource,DsaSnapshot } 
 import { createSupabaseUserClient } from '../infrastructure/supabase-user-client.js'
 
 export interface DsaRepository {loadSnapshot():Promise<DsaSnapshot>}
-type LoanRow={id:string;member_id:string;borrowed_at:string;returned_at:string|null;status:'active'|'returned';profiles:{display_name:string};book_copies:{barcode:string;book_id:string;books:{title:string}}}
+type LoanRow={id:string;member_id:string;borrowed_at:string;returned_at:string|null;status:'active'|'returned'|'lost';profiles:{display_name:string};book_copies:{barcode:string;book_id:string;books:{title:string}}}
 type ReservationRow={id:string;book_id:string;created_at:string;profiles:{display_name:string};books:{title:string}}
 type CatalogRow={id:string;title:string;author:string;category:string;isbn:string;updated_at:string}
 function loan(row:LoanRow):DsaLoanSource{return{id:row.id,memberId:row.member_id,bookId:row.book_copies.book_id,memberName:row.profiles.display_name,bookTitle:row.book_copies.books.title,barcode:row.book_copies.barcode,borrowedAt:row.borrowed_at,returnedAt:row.returned_at,status:row.status}}

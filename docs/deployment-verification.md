@@ -42,3 +42,5 @@ Verify at 320 px and desktop width:
 5. Perform one approved demo-only catalog edit, then verify a matching row appears in `audit_logs` and Admin Analytics. Restore the field through the application; that restoration should produce another audit record.
 
 Record the deployed client URL, API URL, commit SHA, migration list, tester, and verification time in the project submission notes.
+
+For notifications, renewals, and lost/damaged handling, follow the migration order, cron verification, and demo checks in [circulation-enhancements.md](circulation-enhancements.md). Apply its schema migrations before deploying the new application code.

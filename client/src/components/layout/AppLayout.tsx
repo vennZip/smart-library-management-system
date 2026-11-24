@@ -4,6 +4,7 @@ import { useAuth } from "../../auth/useAuth";
 import type { UserRole } from "../../auth/auth.types";
 import { Icon } from "../icons/Icon";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
+import { NotificationBell } from "./NotificationBell";
 
 type NavigationItem = {
   to: string;
@@ -16,7 +17,8 @@ type NavigationItem = {
     | "wallet"
     | "nodes"
     | "chart"
-    | "users";
+    | "users"
+    | "bell";
   end?: boolean;
   roles?: UserRole[];
 };
@@ -26,6 +28,7 @@ const navigation: NavigationItem[] = [
   { to: "/borrowing", label: "Borrowing", icon: "swap" },
   { to: "/reservations", label: "Reservations", icon: "bookmark" },
   { to: "/fines", label: "Fines & payments", icon: "wallet" },
+  { to: "/notifications", label: "Notifications", icon: "bell" },
   {
     to: "/analytics",
     label: "Admin analytics",
@@ -129,6 +132,7 @@ export function AppLayout() {
         <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur md:px-8">
           <p className="text-sm font-semibold text-ink">{activeLabel}</p>
           <div className="ml-auto flex items-center gap-3">
+            <NotificationBell />
             <span className="hidden text-sm font-medium capitalize text-muted sm:inline">
               {role} account
             </span>

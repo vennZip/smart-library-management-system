@@ -59,6 +59,7 @@ const AccountManagementPage = lazy(() =>
     default: module.AccountManagementPage,
   })),
 );
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 
 function RouteFallback() {
   return (
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="borrowing" element={<CirculationPage />} />
           <Route path="reservations" element={<ReservationsPage />} />
           <Route path="fines" element={<FinesPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route
             path="analytics"
             element={

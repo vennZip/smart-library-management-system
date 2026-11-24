@@ -1,4 +1,4 @@
-export interface DsaLoanSource {id:string;memberId:string;bookId:string;memberName:string;bookTitle:string;barcode:string;borrowedAt:string;returnedAt:string|null;status:'active'|'returned'}
+export interface DsaLoanSource {id:string;memberId:string;bookId:string;memberName:string;bookTitle:string;barcode:string;borrowedAt:string;returnedAt:string|null;status:'active'|'returned'|'lost'}
 export interface DsaReservationSource {id:string;bookId:string;bookTitle:string;memberName:string;createdAt:string}
 export interface DsaCatalogSource {id:string;title:string;author:string;category:string;isbn:string;updatedAt:string}
 export interface DsaSnapshot {loans:DsaLoanSource[];reservations:DsaReservationSource[];catalog:DsaCatalogSource[];barcodes:string[]}

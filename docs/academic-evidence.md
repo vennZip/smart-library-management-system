@@ -89,3 +89,9 @@ The staff-only DSA Evidence Lab reports comparisons, elapsed time, sizes, tree h
 5. The production smoke checklist in `deployment-verification.md` verifies the deployed browser/API/database boundary without mutating financial or circulation data.
 
 Run the complete evidence suite with `npm run check` from the repository root.
+
+## Circulation enhancements
+
+`domain/renewal-policy.ts` adds a `RenewalPolicy` contract and `StandardRenewalPolicy` implementation for the one-time seven-day extension. `domain/loan-incident.ts` encapsulates validated lost/damage reasons and charges. `services/loan-lifecycle.service.ts` coordinates these policies through a repository contract; HTTP and React remain presentation boundaries.
+
+`scripts/database.test.mjs` applies the migrations in an ephemeral PostgreSQL engine and exercises RLS, transactional renewal/incident behavior, notification deduplication, and waitlist pickup/expiry triggers. Supabase identity and cron registration are adapted locally; live scheduling and actual PostgREST responses remain deployment checks. The new frontend interaction tests cover renewal, condition reporting, dialog focus/Escape, failed saves, and mark-read actions. Full requirements and demonstration steps are in `circulation-enhancements.md`.

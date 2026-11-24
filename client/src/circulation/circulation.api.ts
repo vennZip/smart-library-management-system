@@ -6,3 +6,5 @@ export function searchMembers(search:string){return apiRequest<{members:MemberSu
 export function searchAvailableCopies(search:string){return apiRequest<{copies:AvailableCopy[]}>(`/api/circulation/available-copies?${new URLSearchParams({search})}`)}
 export function checkout(memberId:string,copyId:string){return apiRequest<{loan:LoanRecord}>('/api/loans',{method:'POST',body:JSON.stringify({memberId,copyId})})}
 export function returnLoan(id:string){return apiRequest<{loan:LoanRecord}>(`/api/loans/${id}/return`,{method:'POST'})}
+export function renewLoan(id:string){return apiRequest<{loan:LoanRecord}>(`/api/loans/${id}/renew`,{method:'POST'})}
+export function recordLoanIncident(id:string,input:{kind:'lost'|'damaged';reason:string;chargeCents:number}){return apiRequest<{loan:LoanRecord}>(`/api/loans/${id}/incident`,{method:'POST',body:JSON.stringify(input)})}

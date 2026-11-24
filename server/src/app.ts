@@ -30,8 +30,14 @@ import type { NextFunction,Request,Response } from 'express'
 import { createAccountsRouter,type AccountsServiceFactory } from './routes/accounts.routes.js'
 import { createAccountsRepository } from './repositories/accounts.repository.js'
 import { AccountsService } from './services/accounts.service.js'
+import { createLoanLifecycleRouter, type LoanLifecycleServiceFactory } from './routes/loan-lifecycle.routes.js'
+import { createLoanLifecycleRepository } from './repositories/loan-lifecycle.repository.js'
+import { LoanLifecycleService } from './services/loan-lifecycle.service.js'
+import { createNotificationRouter, type NotificationServiceFactory } from './routes/notification.routes.js'
+import { createNotificationRepository } from './repositories/notification.repository.js'
+import { NotificationService } from './services/notification.service.js'
 
-export function createApp(authVerifier?:AuthVerifier,catalogFactory?:CatalogServiceFactory,copyFactory?:CopyServiceFactory,circulationFactory?:CirculationServiceFactory,reservationFactory?:ReservationServiceFactory,fineFactory?:FineServiceFactory,dsaFactory?:DsaServiceFactory,analyticsFactory?:AnalyticsServiceFactory,auditFactory?:AuditRepositoryFactory,accountsFactory?:AccountsServiceFactory) {
+export function createApp(authVerifier?:AuthVerifier,catalogFactory?:CatalogServiceFactory,copyFactory?:CopyServiceFactory,circulationFactory?:CirculationServiceFactory,reservationFactory?:ReservationServiceFactory,fineFactory?:FineServiceFactory,dsaFactory?:DsaServiceFactory,analyticsFactory?:AnalyticsServiceFactory,auditFactory?:AuditRepositoryFactory,accountsFactory?:AccountsServiceFactory,lifecycleFactory?:LoanLifecycleServiceFactory,notificationFactory?:NotificationServiceFactory) {
 const app=express()
 const verifier=authVerifier??createSupabaseAuthService()
 const serviceFactory=catalogFactory??((token:string)=>new CatalogService(createCatalogRepository(token)))
@@ -59,6 +65,8 @@ app.use('/api',createFineRouter(verifier,fineServiceFactory))
 app.use('/api',createDsaRouter(verifier,dsaServiceFactory))
 app.use('/api',createAnalyticsRouter(verifier,analyticsServiceFactory))
 app.use('/api',createAccountsRouter(verifier,accountsServiceFactory))
+app.use('/api',createLoanLifecycleRouter(verifier,lifecycleFactory??(token=>new LoanLifecycleService(createLoanLifecycleRepository(token)))))
+app.use('/api',createNotificationRouter(verifier,notificationFactory??(token=>new NotificationService(createNotificationRepository(token)))))
 app.use((_request,response)=>{sendApiError(response,404,'ROUTE_NOT_FOUND','Route not found')})
 app.use((error:unknown,_request:Request,response:Response,_next:NextFunction)=>{if(error instanceof SyntaxError){sendApiError(response,400,'INVALID_JSON','Request body must contain valid JSON');return}console.error(error);sendApiError(response,500,'INTERNAL_ERROR','An unexpected server error occurred')})
 return app

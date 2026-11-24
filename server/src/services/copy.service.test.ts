@@ -11,3 +11,17 @@ test('copy service validates status and required fields',()=>{const service=new 
 test('copy service searches barcode and shelf location',async()=>{const repository=new MemoryCopyRepository();const service=new CopyService(repository);await service.create('book-1',valid);assert.equal((await service.list('book-1','A-12')).length,1);assert.equal((await service.list('book-1','missing')).length,0)})
 test('copy service prevents deletion with loan history',async()=>{const repository=new MemoryCopyRepository();const service=new CopyService(repository);const copy=await service.create('book-1',valid);repository.loanHistory.add(copy.id);await assert.rejects(()=>service.delete(copy.id),CopyConflictError);assert.equal(repository.copies.length,1)})
 test('copy service deletes an unreferenced inactive copy',async()=>{const repository=new MemoryCopyRepository();const service=new CopyService(repository);const copy=await service.create('book-1',{...valid,status:'maintenance'});assert.equal(await service.delete(copy.id),true);assert.equal(repository.copies.length,0)})
+
+test('inventory cannot bypass circulation state transitions but can restore repaired copies',async()=>{
+  const repository=new MemoryCopyRepository();const service=new CopyService(repository)
+  assert.throws(()=>service.create('book-1',{...valid,status:'on_loan'}),CopyConflictError)
+  assert.throws(()=>service.create('book-1',{...valid,status:'reserved'}),CopyConflictError)
+  const copy=await service.create('book-1',valid)
+  copy.status='on_loan'
+  await assert.rejects(()=>service.update(copy.id,{status:'lost'}),CopyConflictError)
+  assert.equal(copy.status,'on_loan')
+  await service.update(copy.id,{status:'on_loan',shelfLocation:'A-2'})
+  assert.equal(copy.shelfLocation,'A-2')
+  copy.status='maintenance'
+  assert.equal((await service.update(copy.id,{status:'available'}))?.status,'available')
+})
